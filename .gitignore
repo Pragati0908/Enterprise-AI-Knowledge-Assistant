@@ -216,3 +216,37 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ==============================
+# Enterprise AI Assistant
+# ==============================
+
+# Environment variables
+.env
+
+# Uploaded documents
+documents/
+
+# Vector database
+vector_store/
+
+# Log files
+logs/
+*.log
+
+# Local databases
+*.db
+*.sqlite3
+
+# VS Code workspace settings
+.vscode/
+
+# AI model cache (optional)
+models/
+
+# Temporary files
+temp/
+tmp/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
