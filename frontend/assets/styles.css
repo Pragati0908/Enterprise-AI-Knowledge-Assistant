@@ -1,0 +1,7 @@
+[data-testid="stAppViewContainer"] h1 {
+    color: blue;
+}
+
+.stButton > button {
+    width: 100%;
+}
