@@ -10,6 +10,7 @@ from app.api.endpoints.health import router as health_router
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.upload import router as upload_router
 from app.api.endpoints.documents import router as documents_router
+from app.api.endpoints.parser import router as parser_router
 
 
 app = FastAPI(
@@ -42,6 +43,7 @@ app.add_exception_handler(
 
 @app.get("/")
 def home():
+
     return {
         "message": "Enterprise AI Knowledge Assistant API",
         "status": "Running Successfully"
@@ -50,6 +52,7 @@ def home():
 
 @app.get("/settings")
 def get_settings():
+
     return {
         "app_name": settings.APP_NAME,
         "version": settings.VERSION,
@@ -62,12 +65,20 @@ def get_settings():
 
 @app.get("/error")
 def test_error():
-    raise Exception("Testing error handler")
+
+    raise Exception(
+        "Testing error handler"
+    )
 
 
 # Register Routers
 
 app.include_router(health_router)
+
 app.include_router(auth_router)
+
 app.include_router(upload_router)
+
 app.include_router(documents_router)
+
+app.include_router(parser_router)
