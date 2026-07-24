@@ -10,7 +10,7 @@ from app.api.endpoints.health import router as health_router
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.upload import router as upload_router
 from app.api.endpoints.documents import router as documents_router
-from app.api.endpoints.parser import router as parser_router
+from app.api.endpoints.ocr import router as ocr_router   # ← NEW
 
 
 app = FastAPI(
@@ -20,7 +20,9 @@ app = FastAPI(
 )
 
 
+# ==========================================================
 # Register Middleware
+# ==========================================================
 
 app.add_middleware(RequestLoggerMiddleware)
 
@@ -33,7 +35,9 @@ app.add_middleware(
 )
 
 
+# ==========================================================
 # Register Global Exception Handler
+# ==========================================================
 
 app.add_exception_handler(
     Exception,
@@ -41,37 +45,63 @@ app.add_exception_handler(
 )
 
 
+# ==========================================================
+# Home Endpoint
+# ==========================================================
+
 @app.get("/")
 def home():
 
     return {
+
         "message": "Enterprise AI Knowledge Assistant API",
+
         "status": "Running Successfully"
+
     }
 
+
+# ==========================================================
+# Settings Endpoint
+# ==========================================================
 
 @app.get("/settings")
 def get_settings():
 
     return {
+
         "app_name": settings.APP_NAME,
+
         "version": settings.VERSION,
+
         "debug": settings.DEBUG,
+
         "host": settings.HOST,
+
         "port": settings.PORT,
+
         "log_level": settings.LOG_LEVEL
+
     }
 
+
+# ==========================================================
+# Test Global Exception
+# ==========================================================
 
 @app.get("/error")
 def test_error():
 
     raise Exception(
+
         "Testing error handler"
+
     )
 
 
+# ==========================================================
 # Register Routers
+# ==========================================================
 
 app.include_router(health_router)
 
@@ -81,4 +111,4 @@ app.include_router(upload_router)
 
 app.include_router(documents_router)
 
-app.include_router(parser_router)
+app.include_router(ocr_router)      # ← NEW
