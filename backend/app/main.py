@@ -10,7 +10,8 @@ from app.api.endpoints.health import router as health_router
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.upload import router as upload_router
 from app.api.endpoints.documents import router as documents_router
-from app.api.endpoints.ocr import router as ocr_router   # ← NEW
+from app.api.endpoints.ocr import router as ocr_router 
+from app.api.endpoints.embeddings import router as embeddings_router     # ← NEW
 
 
 app = FastAPI(
@@ -111,4 +112,6 @@ app.include_router(upload_router)
 
 app.include_router(documents_router)
 
-app.include_router(ocr_router)      # ← NEW
+app.include_router(ocr_router)
+
+app.include_router(embeddings_router)    # ← NEW

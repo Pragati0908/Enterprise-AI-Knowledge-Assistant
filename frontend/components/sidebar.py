@@ -25,6 +25,12 @@ def render_sidebar():
 
             "Documents",
 
+            "Embedding Status",
+
+            "Create Embedding",
+
+            "Similarity Search",
+
             "Chat",
 
             "Settings"

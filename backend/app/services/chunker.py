@@ -34,8 +34,18 @@ class TextChunker:
 
             )
 
-        # Split into sentences
+        # Normalize whitespace
+        text = re.sub(
 
+            r"\s+",
+
+            " ",
+
+            text
+
+        ).strip()
+
+        # Split into sentences
         sentences = re.split(
 
             r'(?<=[.!?])\s+',
@@ -62,65 +72,85 @@ class TextChunker:
 
                 continue
 
-            # Create chunk when limit is reached
+            candidate = (
 
+                current_chunk + " " + sentence
+
+            ).strip()
+
+            # Chunk full
             if (
 
-                len(current_chunk)
-
-                + len(sentence)
-
-                + 1
+                len(candidate)
 
                 > chunk_size
 
+                and current_chunk
+
             ):
 
-                chunk_data = {
+                chunk_text = current_chunk.strip()
 
-                    "chunk_id": chunk_id,
-
-                    "text": current_chunk.strip(),
-
-                    "source": source,
-
-                    "start_index": start_index,
-
-                    "end_index": current_position,
-
-                    "chunk_length": len(
-
-                        current_chunk.strip()
-
-                    )
-
-                }
+                end_index = start_index + len(chunk_text)
 
                 chunks.append(
 
-                    chunk_data
+                    {
+
+                        "chunk_id": chunk_id,
+
+                        "text": chunk_text,
+
+                        "source": source,
+
+                        "start_index": start_index,
+
+                        "end_index": end_index,
+
+                        "chunk_length": len(chunk_text)
+
+                    }
 
                 )
 
                 chunk_id += 1
 
-                overlap_text = current_chunk[-overlap:]
+                # -----------------------------
+                # Create overlap WITHOUT
+                # splitting a word
+                # -----------------------------
 
-                space_index = overlap_text.find(" ")
+                overlap_start = max(
 
-                if space_index != -1:
+                    0,
 
-                   overlap_text = overlap_text[
-                       space_index + 1:
-                   ]
+                    len(chunk_text) - overlap
+
+                )
+
+                # Move to next space if overlap
+                # starts inside a word
+                while (
+
+                    overlap_start < len(chunk_text)
+
+                    and overlap_start > 0
+
+                    and chunk_text[overlap_start - 1] != " "
+
+                ):
+
+                    overlap_start += 1
+
+                overlap_text = chunk_text[overlap_start:].strip()
 
                 start_index = (
 
-                   current_position
+                    end_index
 
-                   - len(overlap_text)
+                    - len(overlap_text)
 
-    )
+                )
 
                 current_chunk = (
 
@@ -130,60 +160,47 @@ class TextChunker:
 
                     + sentence
 
-     )
+                ).strip()
 
             else:
 
-                current_chunk += (
+                current_chunk = candidate
 
-                    " "
+        # Add last chunk
+        if current_chunk:
 
-                    + sentence
+            chunk_text = current_chunk.strip()
 
-                )
+            if (
 
-            current_position += (
+                len(chunk_text)
 
-                len(sentence)
+                >= min_chunk_size
 
-                + 1
+                or not chunks
 
-            )
+            ):
 
-        # Add the last chunk
+                end_index = start_index + len(chunk_text)
 
-        if (
+                chunks.append(
 
-            len(current_chunk.strip())
+                    {
 
-            >= min_chunk_size
+                        "chunk_id": chunk_id,
 
-        ):
+                        "text": chunk_text,
 
-            chunk_data = {
+                        "source": source,
 
-                "chunk_id": chunk_id,
+                        "start_index": start_index,
 
-                "text": current_chunk.strip(),
+                        "end_index": end_index,
 
-                "source": source,
+                        "chunk_length": len(chunk_text)
 
-                "start_index": start_index,
-
-                "end_index": current_position,
-
-                "chunk_length": len(
-
-                    current_chunk.strip()
+                    }
 
                 )
-
-            }
-
-            chunks.append(
-
-                chunk_data
-
-            )
 
         return chunks

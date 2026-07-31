@@ -7,7 +7,10 @@ from api_client import (
     upload_file,
     get_documents,
     extract_ocr,
-    generate_chunks
+    generate_chunks,
+    get_embedding_status,
+    create_document_embeddings,
+    search_embeddings
 )
 
 
@@ -350,6 +353,273 @@ elif page == "Documents":
 
 
 # ======================================================
+# EMBEDDING STATUS
+# ======================================================
+elif page == "Embedding Status":
+    st.header("🧠 Embedding Service Status")
+    if st.button("Check Status"):
+        st.json(get_embedding_status())
+
+# ======================================================
+# CREATE EMBEDDING
+# ======================================================
+# ======================================================
+# INDEX DOCUMENT
+# ======================================================
+
+elif page == "Create Embedding":
+
+    st.header("🧠 Index Uploaded Document")
+
+    st.info(
+        "Index a document that has already been uploaded using the Upload Documents page."
+    )
+
+    filename = st.text_input(
+
+        "Document Name",
+
+        placeholder="sample_chunk_testing.pdf"
+
+    )
+
+    if st.button(
+
+        "Create Embeddings"
+
+    ):
+
+        if filename.strip() == "":
+
+            st.warning(
+
+                "Please enter the uploaded document name."
+
+            )
+
+        else:
+
+            with st.spinner(
+
+                "Creating embeddings..."
+
+            ):
+
+                result = create_document_embeddings(
+
+                    filename
+
+                )
+
+            if "detail" in result:
+
+                st.error(
+
+                    result["detail"]
+
+                )
+
+            else:
+
+                st.success(
+
+                    result["message"]
+
+                )
+
+                st.write(
+
+                    f"Document : {result['document']}"
+
+                )
+
+                st.write(
+
+                    f"Chunks : {result['total_chunks']}"
+
+                )
+
+                st.write(
+
+                    f"Embedding Dimension : {result['embedding_dimension']}"
+
+                )
+
+                st.write(
+
+                    f"Total Stored Vectors : {result['total_vectors']}"
+
+                )
+
+# ======================================================
+# SIMILARITY SEARCH
+# ======================================================
+
+elif page == "Similarity Search":
+
+    st.header("🔎 Similarity Search")
+
+    st.info(
+
+        "Search semantically similar chunks from indexed documents."
+
+    )
+
+    query = st.text_input(
+
+        "Enter Search Query",
+
+        placeholder="Machine Learning"
+
+    )
+
+    top_k = st.slider(
+
+        "Top K Results",
+
+        min_value=1,
+
+        max_value=10,
+
+        value=5
+
+    )
+
+    if st.button(
+
+        "Search"
+
+    ):
+
+        if query.strip() == "":
+
+            st.warning(
+
+                "Please enter a query."
+
+            )
+
+        else:
+
+            with st.spinner(
+
+                "Searching FAISS Vector Database..."
+
+            ):
+
+                results = search_embeddings(
+
+                    query,
+
+                    top_k
+
+                )
+
+            if "detail" in results:
+
+                st.error(
+
+                    results["detail"]
+
+                )
+
+            elif results["total_results"] == 0:
+
+                st.warning(
+
+                    "No matching chunks found."
+
+                )
+
+            else:
+
+                st.success(
+
+                    f"Found {results['total_results']} matching chunks."
+
+                )
+
+                st.subheader(
+
+                    "Search Results"
+
+                )
+
+                for item in results["results"]:
+
+                    with st.expander(
+
+                        f"📄 Chunk {item['chunk_id']}"
+
+                    ):
+
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+
+                            st.write(
+
+                                f"**Document:** {item['document']}"
+
+                            )
+
+                            st.write(
+
+                                f"**Page:** {item['page']}"
+
+                            )
+
+                            st.write(
+
+                                f"**Source:** {item['source']}"
+
+                            )
+
+                            st.write(
+
+                                f"**Chunk ID:** {item['chunk_id']}"
+
+                            )
+
+                        with col2:
+
+                            st.write(
+
+                                f"**Characters:** {item['chunk_length']}"
+
+                            )
+
+                            st.write(
+
+                                f"**Start Index:** {item['start_index']}"
+
+                            )
+
+                            st.write(
+
+                                f"**End Index:** {item['end_index']}"
+
+                            )
+
+                            st.write(
+
+                                f"**Distance:** {item['distance']:.4f}"
+
+                            )
+
+                        st.text_area(
+
+                            "Chunk Text",
+
+                            item["text"],
+
+                            height=220,
+
+                            key=f"search_chunk_{item['chunk_id']}"
+
+                        )
+
+# ======================================================
 # CHAT
 # ======================================================
 
@@ -374,6 +644,6 @@ elif page == "Settings":
 
     st.write(
 
-        "System configuration will be added in Week 7."
+        "System configuration will be added now."
 
     )

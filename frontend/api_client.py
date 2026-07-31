@@ -1,7 +1,12 @@
 import requests
 
+
 BASE_URL = "http://127.0.0.1:8000"
 
+
+# ==========================================================
+# Health API
+# ==========================================================
 
 def get_health():
 
@@ -11,10 +16,20 @@ def get_health():
 
     )
 
+    response.raise_for_status()
+
     return response.json()
 
 
-def upload_file(file):
+# ==========================================================
+# Upload API
+# ==========================================================
+
+def upload_file(
+
+    file
+
+):
 
     files = {
 
@@ -30,8 +45,14 @@ def upload_file(file):
 
     )
 
+    response.raise_for_status()
+
     return response.json()
 
+
+# ==========================================================
+# Documents API
+# ==========================================================
 
 def get_documents():
 
@@ -41,10 +62,20 @@ def get_documents():
 
     )
 
+    response.raise_for_status()
+
     return response.json()
 
 
-def extract_ocr(file):
+# ==========================================================
+# OCR Extract API
+# ==========================================================
+
+def extract_ocr(
+
+    file
+
+):
 
     files = {
 
@@ -60,10 +91,20 @@ def extract_ocr(file):
 
     )
 
+    response.raise_for_status()
+
     return response.json()
 
 
-def generate_chunks(file):
+# ==========================================================
+# OCR Chunk API
+# ==========================================================
+
+def generate_chunks(
+
+    file
+
+):
 
     files = {
 
@@ -78,5 +119,82 @@ def generate_chunks(file):
         files=files
 
     )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Embedding Status API
+# ==========================================================
+
+def get_embedding_status():
+
+    response = requests.get(
+
+        f"{BASE_URL}/embeddings/status"
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Create Document Embeddings API
+# ==========================================================
+
+def create_document_embeddings(
+
+    filename
+
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/embeddings/create",
+
+        json={
+
+            "filename": filename
+
+        }
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Similarity Search API
+# ==========================================================
+
+def search_embeddings(
+
+    query,
+
+    top_k=5
+
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/embeddings/search",
+
+        json={
+
+            "query": query,
+
+            "top_k": top_k
+
+        }
+
+    )
+
+    response.raise_for_status()
 
     return response.json()
