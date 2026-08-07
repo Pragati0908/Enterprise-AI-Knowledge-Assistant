@@ -1,7 +1,13 @@
 import requests
 
 
+# ==========================================================
+# Configuration
+# ==========================================================
+
 BASE_URL = "http://127.0.0.1:8000"
+
+TIMEOUT = 120
 
 
 # ==========================================================
@@ -12,7 +18,9 @@ def get_health():
 
     response = requests.get(
 
-        f"{BASE_URL}/health"
+        f"{BASE_URL}/health",
+
+        timeout=TIMEOUT
 
     )
 
@@ -25,11 +33,7 @@ def get_health():
 # Upload API
 # ==========================================================
 
-def upload_file(
-
-    file
-
-):
+def upload_file(file):
 
     files = {
 
@@ -41,7 +45,9 @@ def upload_file(
 
         f"{BASE_URL}/upload",
 
-        files=files
+        files=files,
+
+        timeout=TIMEOUT
 
     )
 
@@ -58,7 +64,9 @@ def get_documents():
 
     response = requests.get(
 
-        f"{BASE_URL}/documents"
+        f"{BASE_URL}/documents",
+
+        timeout=TIMEOUT
 
     )
 
@@ -71,11 +79,7 @@ def get_documents():
 # OCR Extract API
 # ==========================================================
 
-def extract_ocr(
-
-    file
-
-):
+def extract_ocr(file):
 
     files = {
 
@@ -87,7 +91,9 @@ def extract_ocr(
 
         f"{BASE_URL}/ocr/extract",
 
-        files=files
+        files=files,
+
+        timeout=TIMEOUT
 
     )
 
@@ -100,11 +106,7 @@ def extract_ocr(
 # OCR Chunk API
 # ==========================================================
 
-def generate_chunks(
-
-    file
-
-):
+def generate_chunks(file):
 
     files = {
 
@@ -116,7 +118,9 @@ def generate_chunks(
 
         f"{BASE_URL}/ocr/chunk",
 
-        files=files
+        files=files,
+
+        timeout=TIMEOUT
 
     )
 
@@ -133,7 +137,9 @@ def get_embedding_status():
 
     response = requests.get(
 
-        f"{BASE_URL}/embeddings/status"
+        f"{BASE_URL}/embeddings/status",
+
+        timeout=TIMEOUT
 
     )
 
@@ -143,14 +149,10 @@ def get_embedding_status():
 
 
 # ==========================================================
-# Create Document Embeddings API
+# Create Embeddings API
 # ==========================================================
 
-def create_document_embeddings(
-
-    filename
-
-):
+def create_document_embeddings(filename):
 
     response = requests.post(
 
@@ -160,7 +162,9 @@ def create_document_embeddings(
 
             "filename": filename
 
-        }
+        },
+
+        timeout=TIMEOUT
 
     )
 
@@ -170,7 +174,7 @@ def create_document_embeddings(
 
 
 # ==========================================================
-# Similarity Search API
+# Embedding Search API
 # ==========================================================
 
 def search_embeddings(
@@ -191,7 +195,139 @@ def search_embeddings(
 
             "top_k": top_k
 
-        }
+        },
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Chat Status API
+# ==========================================================
+
+def get_chat_status():
+
+    """
+    GET /chat/status
+    """
+
+    response = requests.get(
+
+        f"{BASE_URL}/chat/status",
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Ask Question API
+# ==========================================================
+
+def ask_question(
+
+    question,
+
+    top_k=3
+
+):
+
+    """
+    POST /chat/ask
+    """
+
+    payload = {
+
+        "question": question,
+
+        "top_k": top_k
+
+    }
+
+    response = requests.post(
+
+        f"{BASE_URL}/chat/ask",
+
+        json=payload,
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Document Summary API
+# ==========================================================
+
+def summarize_document(
+
+    context
+
+):
+
+    """
+    POST /chat/summary
+    """
+
+    payload = {
+
+        "context": context
+
+    }
+
+    response = requests.post(
+
+        f"{BASE_URL}/chat/summary",
+
+        json=payload,
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Generic Prompt API (Optional)
+# ==========================================================
+
+def generate_response(
+
+    prompt
+
+):
+
+    """
+    POST /chat/generate
+    """
+
+    response = requests.post(
+
+        f"{BASE_URL}/chat/generate",
+
+        params={
+
+            "prompt": prompt
+
+        },
+
+        timeout=TIMEOUT
 
     )
 

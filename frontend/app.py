@@ -1,6 +1,7 @@
 import streamlit as st
 
 from components.sidebar import render_sidebar
+from components.chat import render_chat_page
 
 from api_client import (
     get_health,
@@ -14,26 +15,37 @@ from api_client import (
 )
 
 
+# ==========================================================
+# Streamlit Configuration
+# ==========================================================
+
 st.set_page_config(
+
     page_title="Enterprise AI Knowledge Assistant",
+
     page_icon="🤖",
+
     layout="wide"
+
 )
 
+
+# ==========================================================
+# Load Custom CSS
+# ==========================================================
 
 def load_css():
 
     try:
 
         with open(
-
-            "assets/styles.css"
-
-        ) as f:
+            "assets/styles.css",
+            encoding="utf-8"
+        ) as css_file:
 
             st.markdown(
 
-                f"<style>{f.read()}</style>",
+                f"<style>{css_file.read()}</style>",
 
                 unsafe_allow_html=True
 
@@ -47,50 +59,54 @@ def load_css():
 load_css()
 
 
+# ==========================================================
+# Sidebar Navigation
+# ==========================================================
+
 page = render_sidebar()
 
+
+# ==========================================================
+# Page Header
+# ==========================================================
 
 st.title("🤖 Enterprise AI Knowledge Assistant")
 
 st.subheader(page)
 
 
-# ======================================================
+# ==========================================================
 # HOME
-# ======================================================
+# ==========================================================
 
 if page == "Home":
 
-    st.write("Dashboard")
+    st.write("### Dashboard")
 
     try:
 
         health = get_health()
 
         st.success(
-
             "Backend connected successfully."
-
         )
 
         st.json(
-
             health
-
         )
 
-    except Exception:
+    except Exception as error:
 
         st.error(
-
             "Cannot connect to FastAPI backend."
-
         )
 
+        st.exception(error)
 
-# ======================================================
+
+# ==========================================================
 # UPLOAD DOCUMENTS
-# ======================================================
+# ==========================================================
 
 elif page == "Upload Documents":
 
@@ -130,11 +146,17 @@ elif page == "Upload Documents":
 
         ):
 
-            result = upload_file(
+            with st.spinner(
 
-                uploaded_file
+                "Uploading document..."
 
-            )
+            ):
+
+                result = upload_file(
+
+                    uploaded_file
+
+                )
 
             st.success(
 
@@ -149,9 +171,9 @@ elif page == "Upload Documents":
             )
 
 
-# ======================================================
+# ==========================================================
 # OCR
-# ======================================================
+# ==========================================================
 
 elif page == "OCR":
 
@@ -219,7 +241,6 @@ elif page == "OCR":
 
             )
 
-
 # ======================================================
 # CHUNK VIEWER
 # ======================================================
@@ -233,15 +254,10 @@ elif page == "Chunk Viewer":
         "Upload document",
 
         type=[
-
             "pdf",
-
             "png",
-
             "jpg",
-
             "jpeg"
-
         ],
 
         key="chunk"
@@ -314,7 +330,7 @@ elif page == "Chunk Viewer":
 
                     st.text_area(
 
-                        "Text",
+                        "Chunk Text",
 
                         chunk["text"],
 
@@ -337,13 +353,19 @@ elif page == "Documents":
 
         documents = get_documents()
 
+        st.success(
+
+            f"Retrieved {len(documents)} documents."
+
+        )
+
         st.json(
 
             documents
 
         )
 
-    except Exception:
+    except Exception as error:
 
         st.error(
 
@@ -351,20 +373,52 @@ elif page == "Documents":
 
         )
 
+        st.exception(error)
+
 
 # ======================================================
 # EMBEDDING STATUS
 # ======================================================
+
 elif page == "Embedding Status":
+
     st.header("🧠 Embedding Service Status")
-    if st.button("Check Status"):
-        st.json(get_embedding_status())
+
+    if st.button(
+
+        "Check Status"
+
+    ):
+
+        try:
+
+            result = get_embedding_status()
+
+            st.success(
+
+                "Embedding service is available."
+
+            )
+
+            st.json(
+
+                result
+
+            )
+
+        except Exception as error:
+
+            st.error(
+
+                "Unable to fetch embedding status."
+
+            )
+
+            st.exception(error)
+
 
 # ======================================================
 # CREATE EMBEDDING
-# ======================================================
-# ======================================================
-# INDEX DOCUMENT
 # ======================================================
 
 elif page == "Create Embedding":
@@ -372,7 +426,9 @@ elif page == "Create Embedding":
     st.header("🧠 Index Uploaded Document")
 
     st.info(
-        "Index a document that has already been uploaded using the Upload Documents page."
+
+        "Index a document that has already been uploaded."
+
     )
 
     filename = st.text_input(
@@ -427,29 +483,41 @@ elif page == "Create Embedding":
 
                 )
 
-                st.write(
+                col1, col2 = st.columns(2)
 
-                    f"Document : {result['document']}"
+                with col1:
 
-                )
+                    st.metric(
 
-                st.write(
+                        "Chunks",
 
-                    f"Chunks : {result['total_chunks']}"
+                        result["total_chunks"]
 
-                )
+                    )
 
-                st.write(
+                    st.metric(
 
-                    f"Embedding Dimension : {result['embedding_dimension']}"
+                        "Embedding Dimension",
 
-                )
+                        result["embedding_dimension"]
 
-                st.write(
+                    )
 
-                    f"Total Stored Vectors : {result['total_vectors']}"
+                with col2:
 
-                )
+                    st.metric(
+
+                        "Stored Vectors",
+
+                        result["total_vectors"]
+
+                    )
+
+                    st.write(
+
+                        f"**Document:** {result['document']}"
+
+                    )
 
 # ======================================================
 # SIMILARITY SEARCH
@@ -607,6 +675,24 @@ elif page == "Similarity Search":
 
                             )
 
+                        st.progress(
+
+                            max(
+
+                                0.0,
+
+                                min(
+
+                                    1.0,
+
+                                    1 - (item["distance"] / 2)
+
+                                )
+
+                            )
+
+                        )
+
                         st.text_area(
 
                             "Chunk Text",
@@ -620,18 +706,20 @@ elif page == "Similarity Search":
                         )
 
 # ======================================================
-# CHAT
+# AI CHAT
 # ======================================================
 
 elif page == "Chat":
 
-    st.header("💬 AI Chat")
+    st.header("💬 Enterprise AI Chat")
 
-    st.info(
+    st.caption(
 
-        "RAG Chat Interface will be implemented here."
+        "Ask questions about your indexed documents using Retrieval-Augmented Generation (RAG)."
 
     )
+
+    render_chat_page()
 
 
 # ======================================================
@@ -640,10 +728,105 @@ elif page == "Chat":
 
 elif page == "Settings":
 
-    st.header("⚙ Settings")
+    st.header("⚙️ Settings")
 
-    st.write(
+    st.info(
 
-        "System configuration will be added now."
+        "Application configuration and diagnostics."
 
     )
+
+    st.subheader(
+
+        "Backend Status"
+
+    )
+
+    try:
+
+        health = get_health()
+
+        st.success(
+
+            "Backend is online."
+
+        )
+
+        st.json(
+
+            health
+
+        )
+
+    except Exception as error:
+
+        st.error(
+
+            "Unable to connect to backend."
+
+        )
+
+        st.exception(
+
+            error
+
+        )
+
+    st.divider()
+
+    st.subheader(
+
+        "Embedding Service"
+
+    )
+
+    try:
+
+        embedding_status = get_embedding_status()
+
+        st.json(
+
+            embedding_status
+
+        )
+
+    except Exception:
+
+        st.warning(
+
+            "Embedding service status unavailable."
+
+        )
+
+    st.divider()
+
+    st.subheader(
+
+        "Application Information"
+
+    )
+
+    st.markdown("""
+
+**Enterprise AI Knowledge Assistant**
+
+Current Modules
+
+- ✅ Document Upload
+- ✅ OCR
+- ✅ Chunk Viewer
+- ✅ Embedding Generation
+- ✅ Similarity Search
+- ✅ RAG Chat
+- ✅ Source Tracking
+
+Backend
+
+- FastAPI
+- FAISS
+- Ollama
+- Streamlit
+
+""")
+
+    

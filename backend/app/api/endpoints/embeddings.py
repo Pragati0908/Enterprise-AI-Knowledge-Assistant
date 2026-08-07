@@ -1,68 +1,90 @@
 from pathlib import Path
 
-from fastapi import APIRouter
-from fastapi import HTTPException
-
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
 from app.services.metadata_store import MetadataStore
-from app.services.parsers.pdf_parser import PDFParser
+from app.services.parsers.document_parser import DocumentParser
 from app.services.text_cleaner import TextCleaner
 from app.services.chunker import TextChunker
 
 
 router = APIRouter(
-
     prefix="/embeddings",
-
     tags=["Embeddings"]
-
 )
 
-UPLOAD_DIR = Path("uploads/pdf")
+# ==========================================================
+# Project Paths
+# ==========================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+
+UPLOAD_DIR = PROJECT_ROOT / "backend" / "uploads"
+
+VECTOR_DB = PROJECT_ROOT / "backend" / "vector_db"
+
+VECTOR_DB.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+FAISS_PATH = VECTOR_DB / "faiss.index"
 
 # ==========================================================
 # Request Models
 # ==========================================================
 
 class IndexRequest(BaseModel):
-
     filename: str
 
 
-class SearchRequest(
-
-    BaseModel
-
-):
-
+class SearchRequest(BaseModel):
     query: str
-
     top_k: int = 5
 
 
 # ==========================================================
-# Temporary In-Memory Stores
-# (Week 6 will replace these with persistent loading)
+# Stores
 # ==========================================================
 
 vector_store = None
-
 metadata_store = MetadataStore()
 
+# ==========================================================
+# Load Existing Database
+# ==========================================================
+
+try:
+
+    dimension = len(
+        EmbeddingService.generate_embedding("test")
+    )
+
+    vector_store = VectorStore(dimension)
+
+    if FAISS_PATH.exists():
+
+        vector_store.load()
+
+    metadata_store.load()
+
+    print("\nExisting Vector Database Loaded")
+    print(f"Vectors  : {vector_store.total_vectors()}")
+    print(f"Metadata : {metadata_store.total()}\n")
+
+except Exception as e:
+
+    print(f"\nNo existing vector database found ({e})")
+    print("A new database will be created after indexing.\n")
 
 # ==========================================================
-# GET /embeddings/status
+# Status
 # ==========================================================
 
-@router.get(
-
-    "/status"
-
-)
-
+@router.get("/status")
 def embedding_status():
 
     return {
@@ -72,127 +94,142 @@ def embedding_status():
         "service": "Embedding API",
 
         "vector_database":
+            "initialized"
+            if vector_store and vector_store.total_vectors() > 0
+            else "empty",
 
-        "initialized"
+        "total_vectors":
+            vector_store.total_vectors()
+            if vector_store
+            else 0,
 
-        if vector_store
-
-        else "empty"
+        "total_metadata":
+            metadata_store.total()
 
     }
 
-
 # ==========================================================
-# POST /embeddings/create
+# Create Embeddings
 # ==========================================================
 
 @router.post("/create")
-def create_embeddings(
-
-    request: IndexRequest
-
-):
+def create_embeddings(request: IndexRequest):
 
     global vector_store
 
-    file_path = UPLOAD_DIR / request.filename
+    # ======================================================
+    # Locate uploaded document
+    # ======================================================
 
-    if not file_path.exists():
+    supported_extensions = [
+        "pdf",
+        "docx",
+        "pptx",
+        "xlsx"
+    ]
 
-        raise HTTPException(
+    file_path = None
 
-            status_code=404,
+    for extension in supported_extensions:
 
-            detail="Document not found."
-
+        candidate = (
+            UPLOAD_DIR /
+            extension /
+            request.filename
         )
 
-    # ------------------------------------------
-    # Step 1 : Extract Text
-    # ------------------------------------------
+        if candidate.exists():
 
-    text = PDFParser.extract_text(
+            file_path = candidate
+            break
 
-        str(file_path)
+    if file_path is None:
 
-    )
+        raise HTTPException(
+            status_code=404,
+            detail=f"Document not found : {request.filename}"
+        )
 
-    # ------------------------------------------
-    # Step 2 : Clean Text
-    # ------------------------------------------
+    # ======================================================
+    # Extract Text
+    # ======================================================
+
+    try:
+
+        text = DocumentParser.parse_document(
+            str(file_path)
+        )
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+    # ======================================================
+    # Clean Text
+    # ======================================================
 
     cleaned_text = TextCleaner.clean_text(
-
         text
-
     )
 
-    # ------------------------------------------
-    # Step 3 : Chunk Text
-    # ------------------------------------------
+    # ======================================================
+    # Chunk Text
+    # ======================================================
 
     chunks = TextChunker.chunk_text(
-
         text=cleaned_text,
-
         source=request.filename,
-
         chunk_size=800,
-
         overlap=150
-
     )
 
     if len(chunks) == 0:
 
         raise HTTPException(
-
             status_code=400,
-
             detail="No chunks generated."
-
         )
 
-    # ------------------------------------------
-    # Step 4 : Generate Embeddings
-    # ------------------------------------------
+    # ======================================================
+    # Generate Embeddings
+    # ======================================================
 
     chunk_texts = [
-
         chunk["text"]
-
         for chunk in chunks
-
     ]
 
     embeddings = EmbeddingService.generate_embeddings(
-
         chunk_texts
-
     )
 
-    # ------------------------------------------
-    # Step 5 : Initialize FAISS
-    # ------------------------------------------
+    # ======================================================
+    # Development Mode
+    # Rebuild Database
+    # ======================================================
 
-    if vector_store is None:
+    vector_store = VectorStore(
+        len(embeddings[0])
+    )
 
-        vector_store = VectorStore(
+    metadata_store.metadata = []
 
-            len(
+    # ======================================================
+    # Store Embeddings
+    # ======================================================
 
-                embeddings[0]
-
-            )
-
-        )
     vector_store.add_embeddings(
         embeddings
     )
 
-    metadata = []
+    # ======================================================
+    # Metadata
+    # ======================================================
 
-    current_id = metadata_store.total()
+    metadata = []
 
     for index, chunk in enumerate(
         chunks,
@@ -200,96 +237,69 @@ def create_embeddings(
     ):
 
         metadata.append(
-
             {
-                "chunk_id": current_id + index,
-
+                "chunk_id": index,
                 "document": request.filename,
-
                 "page": 1,
-
                 "source": request.filename,
-
                 "start_index": chunk["start_index"],
-
                 "end_index": chunk["end_index"],
-
                 "chunk_length": chunk["chunk_length"],
-
                 "text": chunk["text"]
             }
-
         )
 
     metadata_store.add_many(
         metadata
     )
 
-    vector_store.save(
-        "backend/vector_db/faiss.index"
-    )
+    # ======================================================
+    # Save Database
+    # ======================================================
 
-    metadata_store.save(
-        "backend/vector_db/metadata.json"
-    )
+    vector_store.save()
+
+    metadata_store.save()
+
+    print("\nVector Database Rebuilt Successfully")
+    print(f"Vectors  : {vector_store.total_vectors()}")
+    print(f"Metadata : {metadata_store.total()}\n")
 
     return {
-
         "message": "Document indexed successfully.",
-
         "document": request.filename,
-
         "total_chunks": len(chunks),
-
         "embedding_dimension": len(embeddings[0]),
-
         "total_vectors": vector_store.total_vectors()
-
     }
 
-
 # ==========================================================
-# POST /embeddings/search
+# Similarity Search
 # ==========================================================
 
-@router.post(
+@router.post("/search")
+def search_embeddings(request: SearchRequest):
 
-    "/search"
+    global vector_store
 
-)
-
-def search_embeddings(
-
-    request: SearchRequest
-
-):
-
-    if vector_store is None:
+    if (
+        vector_store is None
+        or
+        vector_store.total_vectors() == 0
+    ):
 
         raise HTTPException(
-
             status_code=400,
-
             detail="Vector database is empty."
-
         )
 
-    query_embedding = (
-
-        EmbeddingService.generate_embedding(
-
-            request.query
-
-        )
-
+    query_embedding = EmbeddingService.generate_embedding(
+        request.query
     )
 
     results = vector_store.search(
-
         query_embedding,
-
         request.top_k
-
     )
 
     output = []
@@ -297,14 +307,10 @@ def search_embeddings(
     for result in results:
 
         metadata = metadata_store.get(
-
             result["vector_id"]
-
         )
 
-        # Skip invalid metadata
         if metadata is None:
-
             continue
 
         output.append(
@@ -326,11 +332,8 @@ def search_embeddings(
                 "chunk_length": metadata["chunk_length"],
 
                 "distance": round(
-
                     result["distance"],
-
                     4
-
                 ),
 
                 "text": metadata["text"]

@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter
+from fastapi import File
+from fastapi import HTTPException
+from fastapi import UploadFile
+
+from werkzeug.utils import secure_filename
 
 
 router = APIRouter(
@@ -8,29 +13,56 @@ router = APIRouter(
     tags=["Document Upload"]
 )
 
+# ==========================================================
+# Project Paths
+# ==========================================================
 
-UPLOAD_DIR = Path("uploads")
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
+UPLOAD_DIR = PROJECT_ROOT / "backend" / "uploads"
+
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+# ==========================================================
+# Allowed File Types
+# ==========================================================
+
+ALLOWED_EXTENSIONS = {
+    "pdf",
+    "docx",
+    "pptx",
+    "xlsx"
+}
+
+# ==========================================================
+# Upload Endpoint
+# ==========================================================
 
 @router.post("/")
 async def upload_document(
     file: UploadFile = File(...)
 ):
 
-    extension = file.filename.split(".")[-1].lower()
+    if not file.filename:
 
-    allowed_extensions = [
-        "pdf",
-        "docx",
-        "pptx",
-        "xlsx"
-    ]
+        raise HTTPException(
+            status_code=400,
+            detail="No filename received."
+        )
 
-    if extension not in allowed_extensions:
+    filename = secure_filename(file.filename)
 
-        return {
-            "error": "Unsupported file type"
-        }
+    extension = filename.split(".")[-1].lower()
+
+    if extension not in ALLOWED_EXTENSIONS:
+
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {extension}"
+        )
 
     folder_path = UPLOAD_DIR / extension
 
@@ -39,24 +71,27 @@ async def upload_document(
         exist_ok=True
     )
 
-    file_path = folder_path / file.filename
+    file_path = folder_path / filename
+
+    contents = await file.read()
 
     with open(
         file_path,
         "wb"
     ) as buffer:
 
-        buffer.write(
-            await file.read()
-        )
+        buffer.write(contents)
 
     return {
 
-        "filename": file.filename,
+        "message": "File uploaded successfully.",
+
+        "filename": filename,
 
         "extension": extension,
 
-        "saved_to": str(file_path),
+        "file_size_bytes": len(contents),
 
-        "message": "File uploaded successfully"
+        "saved_to": str(file_path.resolve())
+
     }
