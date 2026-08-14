@@ -39,7 +39,11 @@ from app.services.metadata_store import MetadataStore
 
 # Load FAISS Vector Store
 vector_store = VectorStore()
-vector_store.load()
+
+if vector_store.exists():
+    vector_store.load()
+else:
+    print("No FAISS index found. Starting with an empty vector database.")
 
 # Load Metadata Store
 metadata_store = MetadataStore()

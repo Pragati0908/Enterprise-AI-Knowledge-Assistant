@@ -4,9 +4,7 @@ import streamlit as st
 def render_sidebar():
 
     st.sidebar.title(
-
         "Navigation"
-
     )
 
     page = st.sidebar.radio(
@@ -32,6 +30,12 @@ def render_sidebar():
             "Similarity Search",
 
             "Chat",
+
+            # ==================================================
+            # DAY 39 — MULTI-DOCUMENT SEARCH
+            # ==================================================
+
+            "Search",
 
             "Settings"
 

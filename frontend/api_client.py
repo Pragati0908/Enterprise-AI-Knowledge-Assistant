@@ -207,6 +207,40 @@ def search_embeddings(
 
 
 # ==========================================================
+# Multi-document Search API
+# Day 39 - Step 6
+# ==========================================================
+
+def search_documents(
+
+    query,
+
+    top_k=5
+
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/search",
+
+        json={
+
+            "query": query,
+
+            "top_k": top_k
+
+        },
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
 # Chat Status API
 # ==========================================================
 

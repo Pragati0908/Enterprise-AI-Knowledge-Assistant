@@ -1,5 +1,6 @@
 [
     {
+        "vector_id": 0,
         "chunk_id": 1,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -10,6 +11,7 @@
         "text": "Sample Document for Chunk Testing Section 1 Introduction to Enterprise AI Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation."
     },
     {
+        "vector_id": 1,
         "chunk_id": 2,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -20,6 +22,7 @@
         "text": "organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Section 2 Document Processing Pipeline The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed."
     },
     {
+        "vector_id": 2,
         "chunk_id": 3,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -30,6 +33,7 @@
         "text": "The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. Section 3 Chunking and Metadata Chunking divides long documents into smaller pieces that fit into language model context windows."
     },
     {
+        "vector_id": 3,
         "chunk_id": 4,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -40,6 +44,7 @@
         "text": "before storage. Section 3 Chunking and Metadata Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows."
     },
     {
+        "vector_id": 4,
         "chunk_id": 5,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -50,6 +55,7 @@
         "text": "identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Section 4 Embeddings and Search Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors."
     },
     {
+        "vector_id": 5,
         "chunk_id": 6,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -60,6 +66,7 @@
         "text": "databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Section 5 Future Scope Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production."
     },
     {
+        "vector_id": 6,
         "chunk_id": 7,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -70,6 +77,7 @@
         "text": "include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Section 6 Introduction to Enterprise AI Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation."
     },
     {
+        "vector_id": 7,
         "chunk_id": 8,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -80,6 +88,7 @@
         "text": "organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Enterprise AI systems help organizations process large amounts of data. Modern systems combine document parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge."
     },
     {
+        "vector_id": 8,
         "chunk_id": 9,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -90,6 +99,7 @@
         "text": "parsing, OCR, chunking, embeddings, and retrieval augmented generation. The goal is to transform unstructured documents into searchable knowledge. Section 7 Document Processing Pipeline The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload."
     },
     {
+        "vector_id": 9,
         "chunk_id": 10,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -100,6 +110,7 @@
         "text": "Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. The pipeline begins with document upload. PDF, DOCX, PPTX, and XLSX files are parsed. Scanned documents are processed with OCR. The extracted text is cleaned and normalized before storage. Section 8 Chunking and Metadata Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index."
     },
     {
+        "vector_id": 10,
         "chunk_id": 11,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -110,6 +121,7 @@
         "text": "pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Chunking divides long documents into smaller pieces that fit into language model context windows. Each chunk stores metadata such as chunk identifier, source file, start index, and end index. Section 9 Embeddings and Search Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors."
     },
     {
+        "vector_id": 11,
         "chunk_id": 12,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -120,6 +132,7 @@
         "text": "databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Embeddings convert text into vectors. Vector databases store these vectors efficiently. Semantic search finds the most relevant chunks for a user query. Section 10 Future Scope Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production."
     },
     {
+        "vector_id": 12,
         "chunk_id": 13,
         "document": "sample_chunk_testing.pdf",
         "page": 1,
@@ -128,5 +141,38 @@
         "end_index": 8006,
         "chunk_length": 659,
         "text": "include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production. Future improvements include authentication, dashboards, analytics, monitoring, and deployment. Testing ensures that the knowledge assistant works reliably in production."
+    },
+    {
+        "vector_id": 13,
+        "chunk_id": 1,
+        "document": "ocr_document.pdf",
+        "page": 1,
+        "source": "ocr_document.pdf",
+        "start_index": 0,
+        "end_index": 694,
+        "chunk_length": 694,
+        "text": "OCR Document Multi-Document Search Test Optical Character Recognition Optical Character Recognition OCR converts text contained in scanned images and scanned documents into machine-readable text. OCR is useful when a PDF does not contain an accessible text layer. OCR Pipeline A typical OCR pipeline includes image acquisition, preprocessing, text recognition, text cleaning, normalization, and storage. The cleaned text can then be divided into chunks for semantic search. Enterprise Use Enterprise knowledge assistants use OCR to make scanned invoices, reports, forms, manuals, and archived documents searchable. OCR therefore connects image-based documents with downstream retrieval systems."
+    },
+    {
+        "vector_id": 14,
+        "chunk_id": 1,
+        "document": "enterprise_ai.docx",
+        "page": 1,
+        "source": "enterprise_ai.docx",
+        "start_index": 0,
+        "end_index": 738,
+        "chunk_length": 738,
+        "text": "Enterprise AI Document Multi-Document Search Test Enterprise AI Enterprise AI systems help organizations process large collections of documents and transform unstructured information into searchable knowledge. Semantic Search Semantic search uses embeddings to represent text as vectors. A vector database can compare a query vector with stored document vectors and return the most relevant chunks. Retrieval-Augmented Generation RAG retrieves relevant document chunks before sending context to a language model. The retrieved chunks provide evidence that can be used to answer questions. Multi-Document Knowledge Base A multi-document knowledge base can contain PDFs, DOCX files, presentations, spreadsheets, and other supported sources."
+    },
+    {
+        "vector_id": 15,
+        "chunk_id": 2,
+        "document": "enterprise_ai.docx",
+        "page": 1,
+        "source": "enterprise_ai.docx",
+        "start_index": 589,
+        "end_index": 848,
+        "chunk_length": 259,
+        "text": "Multi-Document Knowledge Base A multi-document knowledge base can contain PDFs, DOCX files, presentations, spreadsheets, and other supported sources. Their chunks can be stored in one shared vector index while metadata identifies the source document and page."
     }
 ]
