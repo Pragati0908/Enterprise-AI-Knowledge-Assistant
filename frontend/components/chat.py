@@ -7,19 +7,25 @@ from api_client import (
 
 
 # ==========================================================
-# Initialize Session State
-# ==========================================================
-
-if "chat_history" not in st.session_state:
-
-    st.session_state.chat_history = []
-
-
-# ==========================================================
 # Render Chat Component
 # ==========================================================
 
 def render_chat_page():
+
+    # ======================================================
+    # Initialize Session State
+    # ======================================================
+    # This ensures chat_history always exists before
+    # accessing, appending, clearing, or checking it.
+    # ======================================================
+
+    if "chat_history" not in st.session_state:
+
+        st.session_state.chat_history = []
+
+    # ======================================================
+    # Chat Page Header
+    # ======================================================
 
     st.header("🤖 AI Chat")
 
@@ -73,6 +79,10 @@ def render_chat_page():
         value=3
 
     )
+
+    # ------------------------------------------------------
+    # Buttons
+    # ------------------------------------------------------
 
     col1, col2 = st.columns(2)
 
@@ -136,6 +146,10 @@ def render_chat_page():
 
                     )
 
+                    # --------------------------------------
+                    # Store conversation in session state
+                    # --------------------------------------
+
                     st.session_state.chat_history.append(
 
                         result
@@ -144,7 +158,10 @@ def render_chat_page():
 
                 except Exception as error:
 
-                    st.error(error)
+                    st.error(
+                        f"Error while processing question: "
+                        f"{error}"
+                    )
 
     st.divider()
 
@@ -160,99 +177,125 @@ def render_chat_page():
             "No conversation yet."
         )
 
-    for item in reversed(
+    else:
 
-        st.session_state.chat_history
+        for item in reversed(
 
-    ):
-
-        # --------------------------------------------------
-        # User
-        # --------------------------------------------------
-
-        with st.chat_message(
-
-            "user"
+            st.session_state.chat_history
 
         ):
 
-            st.markdown(
+            # --------------------------------------------------
+            # User Message
+            # --------------------------------------------------
 
-                item["question"]
+            with st.chat_message(
 
-            )
+                "user"
 
-        # --------------------------------------------------
-        # Assistant
-        # --------------------------------------------------
+            ):
 
-        with st.chat_message(
+                st.markdown(
 
-            "assistant"
+                    item["question"]
 
-        ):
-
-            st.markdown(
-
-                item["answer"]
-
-            )
-
-            st.divider()
-
-            # ----------------------------------------------
-            # Sources
-            # ----------------------------------------------
-
-            st.markdown(
-                "### 📄 Source Documents"
-            )
-
-            if len(item["sources"]) == 0:
-
-                st.info(
-                    "No relevant source documents found."
                 )
 
-            else:
+            # --------------------------------------------------
+            # Assistant Message
+            # --------------------------------------------------
 
-                for source in item["sources"]:
+            with st.chat_message(
 
-                    with st.expander(
+                "assistant"
 
-                        f"{source['document']} | "
-                        f"Page {source['page']}"
+            ):
 
-                    ):
+                st.markdown(
 
-                        st.write(
+                    item["answer"]
 
-                            f"Chunk ID : "
-                            f"{source['chunk_id']}"
+                )
 
+                st.divider()
+
+                # ----------------------------------------------
+                # Sources
+                # ----------------------------------------------
+
+                st.markdown(
+                    "### 📄 Source Documents"
+                )
+
+                sources = item.get(
+                    "sources",
+                    []
+                )
+
+                if len(sources) == 0:
+
+                    st.info(
+                        "No relevant source documents found."
+                    )
+
+                else:
+
+                    for source in sources:
+
+                        document_name = source.get(
+                            "document",
+                            "Unknown Document"
                         )
 
-                        st.write(
-
-                            f"Distance : "
-                            f"{source['distance']:.4f}"
-
+                        page_number = source.get(
+                            "page",
+                            "Unknown"
                         )
 
-                        # ----------------------------------
-                        # Optional Chunk Preview
-                        # ----------------------------------
+                        with st.expander(
 
-                        if "text" in source:
+                            f"{document_name} | "
+                            f"Page {page_number}"
 
-                            st.markdown(
-
-                                "#### Retrieved Chunk"
-
-                            )
+                        ):
 
                             st.write(
 
-                                source["text"]
+                                f"Chunk ID : "
+                                f"{source.get('chunk_id', 'N/A')}"
 
                             )
+
+                            # ----------------------------------
+                            # Distance
+                            # ----------------------------------
+
+                            if (
+                                source.get("distance")
+                                is not None
+                            ):
+
+                                st.write(
+
+                                    f"Distance : "
+                                    f"{source['distance']:.4f}"
+
+                                )
+
+                            # ----------------------------------
+                            # Optional Chunk Preview
+                            # ----------------------------------
+
+                            if "text" in source:
+
+                                st.markdown(
+
+                                    "#### Retrieved Chunk"
+
+                                )
+
+                                st.write(
+
+                                    source["text"]
+
+                                )

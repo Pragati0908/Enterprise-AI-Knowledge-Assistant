@@ -3,6 +3,7 @@ import streamlit as st
 from components.sidebar import render_sidebar
 from components.chat import render_chat_page
 from components.search import render_search
+from components.extraction import render_extraction
 
 from api_client import (
     get_health,
@@ -64,9 +65,13 @@ page = render_sidebar()
 # Page Header
 # ==========================================================
 
-st.title("🤖 Enterprise AI Knowledge Assistant")
+st.title(
+    "🤖 Enterprise AI Knowledge Assistant"
+)
 
-st.subheader(page)
+st.subheader(
+    page
+)
 
 
 # ==========================================================
@@ -75,7 +80,9 @@ st.subheader(page)
 
 if page == "Home":
 
-    st.write("### Dashboard")
+    st.write(
+        "### Dashboard"
+    )
 
     try:
 
@@ -95,7 +102,9 @@ if page == "Home":
             "Cannot connect to FastAPI backend."
         )
 
-        st.exception(error)
+        st.exception(
+            error
+        )
 
 
 # ==========================================================
@@ -104,7 +113,9 @@ if page == "Home":
 
 elif page == "Upload Documents":
 
-    st.header("📂 Upload Documents")
+    st.header(
+        "📂 Upload Documents"
+    )
 
     uploaded_file = st.file_uploader(
 
@@ -154,7 +165,9 @@ elif page == "Upload Documents":
 
 elif page == "OCR":
 
-    st.header("📝 OCR Text Extraction")
+    st.header(
+        "📝 OCR Text Extraction"
+    )
 
     uploaded_file = st.file_uploader(
 
@@ -212,7 +225,9 @@ elif page == "OCR":
 
 elif page == "Chunk Viewer":
 
-    st.header("📑 Chunk Viewer")
+    st.header(
+        "📑 Chunk Viewer"
+    )
 
     uploaded_file = st.file_uploader(
 
@@ -252,11 +267,15 @@ elif page == "Chunk Viewer":
             )
 
             for chunk_index, chunk in enumerate(
+
                 result["chunks"]
+
             ):
 
                 with st.expander(
+
                     f"Chunk {chunk['chunk_id']}"
+
                 ):
 
                     st.write(
@@ -275,14 +294,12 @@ elif page == "Chunk Viewer":
                         f"Length : {chunk['chunk_length']}"
                     )
 
-                    # --------------------------------------
-                    # Unique Streamlit key
-                    # --------------------------------------
-
                     chunk_key = (
+
                         f"chunk_"
                         f"{chunk_index}_"
                         f"{chunk['chunk_id']}"
+
                     )
 
                     st.text_area(
@@ -304,7 +321,9 @@ elif page == "Chunk Viewer":
 
 elif page == "Documents":
 
-    st.header("📚 Uploaded Documents")
+    st.header(
+        "📚 Uploaded Documents"
+    )
 
     try:
 
@@ -324,7 +343,9 @@ elif page == "Documents":
             "Unable to fetch document list."
         )
 
-        st.exception(error)
+        st.exception(
+            error
+        )
 
 
 # ==========================================================
@@ -333,7 +354,9 @@ elif page == "Documents":
 
 elif page == "Embedding Status":
 
-    st.header("🧠 Embedding Service Status")
+    st.header(
+        "🧠 Embedding Service Status"
+    )
 
     if st.button(
         "Check Status"
@@ -357,7 +380,9 @@ elif page == "Embedding Status":
                 "Unable to fetch embedding status."
             )
 
-            st.exception(error)
+            st.exception(
+                error
+            )
 
 
 # ==========================================================
@@ -366,7 +391,9 @@ elif page == "Embedding Status":
 
 elif page == "Create Embedding":
 
-    st.header("🧠 Index Uploaded Document")
+    st.header(
+        "🧠 Index Uploaded Document"
+    )
 
     st.info(
         "Index a document that has already been uploaded."
@@ -440,7 +467,8 @@ elif page == "Create Embedding":
                     )
 
                     st.write(
-                        f"**Document:** {result['document']}"
+                        f"**Document:** "
+                        f"{result['document']}"
                     )
 
 
@@ -450,10 +478,13 @@ elif page == "Create Embedding":
 
 elif page == "Similarity Search":
 
-    st.header("🔎 Similarity Search")
+    st.header(
+        "🔎 Similarity Search"
+    )
 
     st.info(
-        "Search semantically similar chunks from all indexed documents."
+        "Search semantically similar chunks "
+        "from all indexed documents."
     )
 
     query = st.text_input(
@@ -513,10 +544,11 @@ elif page == "Similarity Search":
                         "Similarity search failed."
                     )
 
-                    st.exception(error)
+                    st.exception(
+                        error
+                    )
 
                     results = None
-
 
             if results is not None:
 
@@ -549,19 +581,13 @@ elif page == "Similarity Search":
 
                 else:
 
-                    search_results = results["results"]
-
-                    # ==================================================
-                    # TOTAL RESULTS
-                    # ==================================================
+                    search_results = (
+                        results["results"]
+                    )
 
                     total_results = len(
                         search_results
                     )
-
-                    # ==================================================
-                    # UNIQUE DOCUMENTS
-                    # ==================================================
 
                     unique_documents = set()
 
@@ -581,9 +607,9 @@ elif page == "Similarity Search":
                         unique_documents
                     )
 
-                    # ==================================================
-                    # SEARCH SUMMARY
-                    # ==================================================
+                    # ----------------------------------------------
+                    # Search Summary
+                    # ----------------------------------------------
 
                     st.success(
                         "Similarity search completed successfully."
@@ -605,9 +631,9 @@ elif page == "Similarity Search":
                             documents_found
                         )
 
-                    # ==================================================
-                    # DOCUMENT LIST
-                    # ==================================================
+                    # ----------------------------------------------
+                    # Document List
+                    # ----------------------------------------------
 
                     st.subheader(
                         "📚 Documents Retrieved"
@@ -621,44 +647,46 @@ elif page == "Similarity Search":
                             f"📄 {document}"
                         )
 
-                    # ==================================================
-                    # SEARCH RESULTS
-                    # ==================================================
+                    # ----------------------------------------------
+                    # Search Results
+                    # ----------------------------------------------
 
                     st.subheader(
                         "🔎 Search Results"
                     )
 
                     for result_index, item in enumerate(
+
                         search_results,
+
                         start=1
+
                     ):
 
                         document = item.get(
+
                             "document",
+
                             "Unknown"
+
                         )
 
                         chunk_id = item.get(
-                            "chunk_id",
-                            "Unknown"
-                        )
 
-                        # ==================================================
-                        # RESULT EXPANDER
-                        # ==================================================
+                            "chunk_id",
+
+                            "Unknown"
+
+                        )
 
                         with st.expander(
 
-                            f"📄 {document} | Chunk {chunk_id}",
+                            f"📄 {document} | "
+                            f"Chunk {chunk_id}",
 
                             expanded=False
 
                         ):
-
-                            # ==================================================
-                            # METADATA
-                            # ==================================================
 
                             col1, col2 = st.columns(2)
 
@@ -679,7 +707,8 @@ elif page == "Similarity Search":
                                 )
 
                                 st.write(
-                                    f"**Chunk ID:** {chunk_id}"
+                                    f"**Chunk ID:** "
+                                    f"{chunk_id}"
                                 )
 
                             with col2:
@@ -700,10 +729,12 @@ elif page == "Similarity Search":
                                 )
 
                                 distance = float(
+
                                     item.get(
                                         "distance",
                                         0
                                     )
+
                                 )
 
                                 st.write(
@@ -711,9 +742,9 @@ elif page == "Similarity Search":
                                     f"{distance:.4f}"
                                 )
 
-                            # ==================================================
-                            # STEP 9 — CITATION
-                            # ==================================================
+                            # ------------------------------------------
+                            # Citation
+                            # ------------------------------------------
 
                             citation = item.get(
                                 "citation"
@@ -732,12 +763,13 @@ elif page == "Similarity Search":
                             else:
 
                                 st.warning(
-                                    "Citation information is not available."
+                                    "Citation information "
+                                    "is not available."
                                 )
 
-                            # ==================================================
+                            # ------------------------------------------
                             # Citation Details
-                            # ==================================================
+                            # ------------------------------------------
 
                             citation_document = item.get(
                                 "citation_document"
@@ -775,9 +807,9 @@ elif page == "Similarity Search":
                                         f"{citation_chunk}"
                                     )
 
-                            # ==================================================
-                            # SIMILARITY INDICATOR
-                            # ==================================================
+                            # ------------------------------------------
+                            # Similarity Indicator
+                            # ------------------------------------------
 
                             similarity_score = max(
 
@@ -804,9 +836,9 @@ elif page == "Similarity Search":
                                 f"{similarity_score:.4f}"
                             )
 
-                            # ==================================================
-                            # CHUNK TEXT
-                            # ==================================================
+                            # ------------------------------------------
+                            # Chunk Text
+                            # ------------------------------------------
 
                             st.text_area(
 
@@ -819,15 +851,13 @@ elif page == "Similarity Search":
 
                                 height=220,
 
-                                # ------------------------------------------------
-                                # Unique key
-                                # ------------------------------------------------
-
                                 key=(
+
                                     f"search_chunk_"
                                     f"{result_index}_"
                                     f"{chunk_id}_"
                                     f"{document}"
+
                                 )
 
                             )
@@ -839,20 +869,20 @@ elif page == "Similarity Search":
 
 elif page == "Chat":
 
-    st.header("💬 Enterprise AI Chat")
-
-    st.caption(
-
-        "Ask questions about your indexed documents "
-        "using Retrieval-Augmented Generation (RAG)."
-
-    )
-
     render_chat_page()
 
 
 # ==========================================================
-# DAY 39 — MULTI-DOCUMENT SEARCH
+# INFORMATION EXTRACTION
+# ==========================================================
+
+elif page == "Information Extraction":
+
+    render_extraction()
+
+
+# ==========================================================
+# MULTI-DOCUMENT SEARCH
 # ==========================================================
 
 elif page == "Search":
@@ -866,7 +896,9 @@ elif page == "Search":
 
 elif page == "Settings":
 
-    st.header("⚙️ Settings")
+    st.header(
+        "⚙️ Settings"
+    )
 
     st.info(
         "Application configuration and diagnostics."
@@ -940,7 +972,7 @@ elif page == "Settings":
 
 **Enterprise AI Knowledge Assistant**
 
-Current Modules
+### Current Modules
 
 - ✅ Document Upload
 - ✅ OCR
@@ -951,8 +983,9 @@ Current Modules
 - ✅ Citation Generation
 - ✅ Source Tracking
 - ✅ Multi-document Search
+- ✅ Information Extraction
 
-Backend
+### Backend
 
 - FastAPI
 - FAISS
@@ -960,3 +993,14 @@ Backend
 - Streamlit
 
 """)
+
+
+# ==========================================================
+# UNKNOWN PAGE FALLBACK
+# ==========================================================
+
+else:
+
+    st.error(
+        f"Unknown page selected: {page}"
+    )

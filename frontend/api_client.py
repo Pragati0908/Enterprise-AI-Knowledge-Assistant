@@ -208,7 +208,6 @@ def search_embeddings(
 
 # ==========================================================
 # Multi-document Search API
-# Day 39 - Step 6
 # ==========================================================
 
 def search_documents(
@@ -358,6 +357,37 @@ def generate_response(
         params={
 
             "prompt": prompt
+
+        },
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Information Extraction API
+# ==========================================================
+
+def extract_information(
+    text,
+    extraction_type="all"
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/extraction",
+
+        json={
+
+            "text": text,
+
+            "extraction_type":
+                extraction_type
 
         },
 

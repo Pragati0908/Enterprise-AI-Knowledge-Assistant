@@ -13,7 +13,8 @@ from app.api.endpoints.documents import router as documents_router
 from app.api.endpoints.ocr import router as ocr_router
 from app.api.endpoints.embeddings import router as embeddings_router
 from app.api.endpoints.chat import router as chat_router
-from app.api.endpoints.search import router as search_router       # NEW
+from app.api.endpoints.search import router as search_router       
+from app.api.endpoints.extraction import router as extraction_router          # NEW
 
 
 app = FastAPI(
@@ -125,5 +126,9 @@ app.include_router(
 )
 
 app.include_router(
-    search_router                 # NEW
+    search_router                 
 )
+
+app.include_router(
+    extraction_router
+)                                  # NEW

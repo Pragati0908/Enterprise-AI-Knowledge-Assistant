@@ -31,11 +31,9 @@ def render_sidebar():
 
             "Chat",
 
-            # ==================================================
-            # DAY 39 — MULTI-DOCUMENT SEARCH
-            # ==================================================
-
             "Search",
+
+            "Information Extraction",  
 
             "Settings"
 
