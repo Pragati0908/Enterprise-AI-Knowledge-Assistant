@@ -6,6 +6,22 @@ from app.core.exceptions import global_exception_handler
 
 from app.middleware.request_logger import RequestLoggerMiddleware
 
+# ==========================================================
+# Database Imports
+# ==========================================================
+
+from app.db.database import (
+    Base,
+    engine
+)
+
+from app.db import models
+
+
+# ==========================================================
+# API Routers
+# ==========================================================
+
 from app.api.endpoints.health import router as health_router
 from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.upload import router as upload_router
@@ -13,14 +29,31 @@ from app.api.endpoints.documents import router as documents_router
 from app.api.endpoints.ocr import router as ocr_router
 from app.api.endpoints.embeddings import router as embeddings_router
 from app.api.endpoints.chat import router as chat_router
-from app.api.endpoints.search import router as search_router       
-from app.api.endpoints.extraction import router as extraction_router          # NEW
+from app.api.endpoints.search import router as search_router
+from app.api.endpoints.extraction import router as extraction_router
 
+
+# ==========================================================
+# Create Database Tables - Day 46
+# ==========================================================
+
+Base.metadata.create_all(
+    bind=engine
+)
+
+
+# ==========================================================
+# FastAPI Application
+# ==========================================================
 
 app = FastAPI(
+
     title=settings.APP_NAME,
+
     description="Production Ready RAG Platform",
+
     version=settings.VERSION
+
 )
 
 
@@ -29,15 +62,24 @@ app = FastAPI(
 # ==========================================================
 
 app.add_middleware(
+
     RequestLoggerMiddleware
+
 )
 
+
 app.add_middleware(
+
     CORSMiddleware,
+
     allow_origins=["*"],
+
     allow_credentials=True,
+
     allow_methods=["*"],
+
     allow_headers=["*"]
+
 )
 
 
@@ -46,8 +88,11 @@ app.add_middleware(
 # ==========================================================
 
 app.add_exception_handler(
+
     Exception,
+
     global_exception_handler
+
 )
 
 
@@ -59,8 +104,11 @@ app.add_exception_handler(
 def home():
 
     return {
+
         "message": "Enterprise AI Knowledge Assistant API",
+
         "status": "Running Successfully"
+
     }
 
 
@@ -72,12 +120,19 @@ def home():
 def get_settings():
 
     return {
+
         "app_name": settings.APP_NAME,
+
         "version": settings.VERSION,
+
         "debug": settings.DEBUG,
+
         "host": settings.HOST,
+
         "port": settings.PORT,
+
         "log_level": settings.LOG_LEVEL
+
     }
 
 
@@ -89,7 +144,9 @@ def get_settings():
 def test_error():
 
     raise Exception(
+
         "Testing error handler"
+
     )
 
 
@@ -98,37 +155,63 @@ def test_error():
 # ==========================================================
 
 app.include_router(
+
     health_router
+
 )
 
+
 app.include_router(
+
     auth_router
+
 )
 
+
 app.include_router(
+
     upload_router
+
 )
 
+
 app.include_router(
+
     documents_router
+
 )
 
+
 app.include_router(
+
     ocr_router
+
 )
 
+
 app.include_router(
+
     embeddings_router
+
 )
 
+
 app.include_router(
+
     chat_router
+
 )
 
-app.include_router(
-    search_router                 
-)
 
 app.include_router(
+
+    search_router
+
+)
+
+
+app.include_router(
+
     extraction_router
-)                                  # NEW
+
+)

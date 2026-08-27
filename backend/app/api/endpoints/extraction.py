@@ -14,10 +14,25 @@ Supported extraction types
 2. dates
 3. entities
 4. invoice
+
+Authentication
+--------------
+JWT Bearer Token Required
 ===============================================================
 """
 
-from fastapi import APIRouter
+from fastapi import (
+    APIRouter,
+    Depends
+)
+
+from app.auth.dependencies import (
+    get_current_user
+)
+
+from app.db.models import (
+    User
+)
 
 from app.schemas.extraction import (
     ExtractionRequest
@@ -48,11 +63,21 @@ router = APIRouter(
     "/extraction"
 )
 def extract_information(
-    request: ExtractionRequest
+
+    request: ExtractionRequest,
+
+    # ======================================================
+    # JWT Authentication
+    # ======================================================
+
+    current_user: User = Depends(
+        get_current_user
+    )
+
 ):
 
     # ======================================================
-    # Read request data
+    # Read Request Data
     # ======================================================
 
     text = request.text.strip()
@@ -62,6 +87,7 @@ def extract_information(
         .strip()
         .lower()
     )
+
 
     # ======================================================
     # ALL
@@ -74,6 +100,7 @@ def extract_information(
                 text
             )
         )
+
 
     # ======================================================
     # DATES
@@ -93,6 +120,7 @@ def extract_information(
             "message":
                 "Date extraction completed."
         }
+
 
     # ======================================================
     # ENTITIES
@@ -120,6 +148,7 @@ def extract_information(
                 "Entity extraction completed."
         }
 
+
     # ======================================================
     # INVOICE
     # ======================================================
@@ -138,6 +167,7 @@ def extract_information(
             "message":
                 "Invoice extraction completed."
         }
+
 
     # ======================================================
     # INVALID EXTRACTION TYPE
