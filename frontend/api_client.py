@@ -11,6 +11,137 @@ TIMEOUT = 120
 
 
 # ==========================================================
+# Authentication Headers
+# ==========================================================
+
+def get_auth_headers():
+
+    import streamlit as st
+
+    token = st.session_state.get(
+        "access_token"
+    )
+
+    if not token:
+
+        return {}
+
+    return {
+
+        "Authorization":
+            f"Bearer {token}"
+
+    }
+
+
+# ==========================================================
+# Authentication API
+# ==========================================================
+
+def register_user(
+
+    username,
+
+    email,
+
+    password
+
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/auth/register",
+
+        json={
+
+            "username":
+                username,
+
+            "email":
+                email,
+
+            "password":
+                password
+
+        },
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Login API
+# ==========================================================
+
+def login_user(
+
+    username,
+
+    password
+
+):
+
+    response = requests.post(
+
+        f"{BASE_URL}/auth/login",
+
+        json={
+
+            "username":
+                username,
+
+            "password":
+                password
+
+        },
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
+# Current User API
+# ==========================================================
+
+def get_current_user(
+
+    token
+
+):
+
+    headers = {
+
+        "Authorization":
+            f"Bearer {token}"
+
+    }
+
+    response = requests.get(
+
+        f"{BASE_URL}/auth/me",
+
+        headers=headers,
+
+        timeout=TIMEOUT
+
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# ==========================================================
 # Health API
 # ==========================================================
 
@@ -374,8 +505,11 @@ def generate_response(
 # ==========================================================
 
 def extract_information(
+
     text,
+
     extraction_type="all"
+
 ):
 
     response = requests.post(
@@ -384,12 +518,15 @@ def extract_information(
 
         json={
 
-            "text": text,
+            "text":
+                text,
 
             "extraction_type":
                 extraction_type
 
         },
+
+        headers=get_auth_headers(),
 
         timeout=TIMEOUT
 

@@ -8,7 +8,9 @@ Information Extraction Component
 
 import streamlit as st
 
-from api_client import extract_information
+from api_client import (
+    extract_information
+)
 
 
 # ==========================================================
@@ -31,6 +33,7 @@ def render_extraction():
         """
     )
 
+
     # ------------------------------------------------------
     # Extraction Type
     # ------------------------------------------------------
@@ -40,13 +43,19 @@ def render_extraction():
         "Select Extraction Type",
 
         [
+
             "all",
+
             "dates",
+
             "entities",
+
             "invoice"
+
         ]
 
     )
+
 
     # ------------------------------------------------------
     # Text Input
@@ -82,13 +91,17 @@ Grand Total: ₹11,800.00
 
     )
 
+
     # ------------------------------------------------------
     # Extract Button
     # ------------------------------------------------------
 
     if st.button(
+
         "🔍 Extract Information",
+
         use_container_width=True
+
     ):
 
         # --------------------------------------------------
@@ -103,6 +116,7 @@ Grand Total: ₹11,800.00
 
             return
 
+
         # --------------------------------------------------
         # Call Backend API
         # --------------------------------------------------
@@ -110,7 +124,9 @@ Grand Total: ₹11,800.00
         try:
 
             with st.spinner(
+
                 "Extracting information..."
+
             ):
 
                 result = extract_information(
@@ -123,39 +139,70 @@ Grand Total: ₹11,800.00
 
                 )
 
+
         except Exception as error:
 
             st.error(
+
                 f"Extraction failed: {error}"
+
             )
 
             return
+
 
         # --------------------------------------------------
         # Validate API Response
         # --------------------------------------------------
 
         if not result.get(
+
             "success",
+
             False
+
         ):
 
             st.error(
+
                 result.get(
+
                     "error",
+
                     "Information extraction failed."
+
                 )
+
             )
 
             return
 
-        # --------------------------------------------------
-        # Display Success
-        # --------------------------------------------------
 
-        st.success(
-            "Information extracted successfully."
+        # ==================================================
+        # Display Backend Success Message
+        # ==================================================
+
+        message = result.get(
+
+            "message"
+
         )
+
+
+        if message:
+
+            st.success(
+                message
+            )
+
+        else:
+
+            st.success(
+
+                "Information extracted successfully."
+
+            )
+
 
         # ==================================================
         # DATES
@@ -170,8 +217,11 @@ Grand Total: ₹11,800.00
         ]:
 
             st.subheader(
+
                 "📅 Dates"
+
             )
+
 
             dates = result.get(
 
@@ -181,19 +231,25 @@ Grand Total: ₹11,800.00
 
             )
 
+
             if dates:
 
                 for date in dates:
 
                     st.write(
+
                         f"• {date}"
+
                     )
 
             else:
 
                 st.info(
+
                     "No dates found."
+
                 )
+
 
         # ==================================================
         # ENTITIES
@@ -212,8 +268,11 @@ Grand Total: ₹11,800.00
             # ----------------------------------------------
 
             st.subheader(
+
                 "👤 People"
+
             )
+
 
             names = result.get(
 
@@ -223,27 +282,36 @@ Grand Total: ₹11,800.00
 
             )
 
+
             if names:
 
                 for name in names:
 
                     st.write(
+
                         f"• {name}"
+
                     )
 
             else:
 
                 st.info(
+
                     "No people found."
+
                 )
+
 
             # ----------------------------------------------
             # Organizations
             # ----------------------------------------------
 
             st.subheader(
+
                 "🏢 Organizations"
+
             )
+
 
             organizations = result.get(
 
@@ -253,19 +321,25 @@ Grand Total: ₹11,800.00
 
             )
 
+
             if organizations:
 
                 for organization in organizations:
 
                     st.write(
+
                         f"• {organization}"
+
                     )
 
             else:
 
                 st.info(
+
                     "No organizations found."
+
                 )
+
 
         # ==================================================
         # INVOICE
@@ -274,8 +348,11 @@ Grand Total: ₹11,800.00
         if extraction_type == "invoice":
 
             st.subheader(
+
                 "🧾 Invoice Information"
+
             )
+
 
             invoice = result.get(
 
@@ -285,14 +362,19 @@ Grand Total: ₹11,800.00
 
             )
 
+
             if invoice:
 
                 st.json(
+
                     invoice
+
                 )
 
             else:
 
                 st.info(
+
                     "No invoice information found."
+
                 )

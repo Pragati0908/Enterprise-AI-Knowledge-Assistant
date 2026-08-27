@@ -1,5 +1,10 @@
 import streamlit as st
 
+from components.auth import (
+    initialize_auth_state,
+    render_authentication
+)
+
 from components.sidebar import render_sidebar
 from components.chat import render_chat_page
 from components.search import render_search
@@ -26,6 +31,24 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
+
+# ==========================================================
+# Initialize Authentication
+# ==========================================================
+
+initialize_auth_state()
+
+
+# ==========================================================
+# Authentication Check
+# ==========================================================
+
+if not st.session_state.authenticated:
+
+    render_authentication()
+
+    st.stop()
 
 
 # ==========================================================
@@ -984,6 +1007,9 @@ elif page == "Settings":
 - ✅ Source Tracking
 - ✅ Multi-document Search
 - ✅ Information Extraction
+- ✅ User Authentication
+- ✅ JWT Authentication
+- ✅ Protected API Access
 
 ### Backend
 
