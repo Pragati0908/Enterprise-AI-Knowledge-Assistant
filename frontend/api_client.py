@@ -361,6 +361,8 @@ def search_documents(
 
         },
 
+        headers=get_auth_headers(),
+
         timeout=TIMEOUT
 
     )

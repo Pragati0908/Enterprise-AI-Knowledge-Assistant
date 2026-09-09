@@ -174,5 +174,102 @@
         "end_index": 848,
         "chunk_length": 259,
         "text": "Multi-Document Knowledge Base A multi-document knowledge base can contain PDFs, DOCX files, presentations, spreadsheets, and other supported sources. Their chunks can be stored in one shared vector index while metadata identifies the source document and page."
+    },
+    {
+        "vector_id": 16,
+        "chunk_id": 1,
+        "document": "harshad_mehta_investing_playbook.pdf",
+        "page": 1,
+        "source": "harshad_mehta_investing_playbook.pdf",
+        "start_index": 0,
+        "end_index": 628,
+        "chunk_length": 628,
+        "text": "Harshad Mehta Inspired Investing Playbook Legal Practical Crypto Indian Markets Pravesh A Agrawal Section 1 10 Legal Lessons 0.1 Thinking 1 Follow liquidity Markets move based on money flow, not news. 2 Ride strong trends instead of fighting them. 3 Concentration builds wealth avoid over-diversification. 4 Identify opportunities before the crowd. 5 Build conviction early and scale positions. 6 Understand market psychology fear vs greed cycles. 7 Use momentum intelligently, not blindly. 8 Leverage public information with better interpretation. 9 Take big bets only when conviction is high. 10 Timing matters more than idea."
+    },
+    {
+        "vector_id": 17,
+        "chunk_id": 2,
+        "document": "harshad_mehta_investing_playbook.pdf",
+        "page": 1,
+        "source": "harshad_mehta_investing_playbook.pdf",
+        "start_index": 478,
+        "end_index": 1617,
+        "chunk_length": 1139,
+        "text": "not blindly. 8 Leverage public information with better interpretation. 9 Take big bets only when conviction is high. 10 Timing matters more than idea. What NOT to Copy 1 Market manipulation 2 Illegal leverage or misuse of funds 3 System exploitation Section 2 Harshad-Style Bets Crypto 2026 Narrative Assets Logic AI Compute RNDR, FET Institutional real use case RWA ONDO Early stage institutional narrative InfraDePIN AR, FIL Backbone of Web3 ecosystem Crypto Allocation Strategy 1 35 RNDR FET 2 25 ONDO 3 20 AR 4 20 FIL Section 3 Harshad-Style Bets Indian Stocks 2026 Sector Stock Logic Infrastructure LT Execution Govt push Power NTPC Energy demand growth Defense BEL Strong order book Banking SBI Balance sheet improvement Capital Goods Siemens Industrial cycle Stock Allocation Strategy 1 30 LT 2 20 NTPC 3 20 BEL 4 15 SBI 5 15 Siemens Execution Strategy Critical 1 Enter in 3 phases 30 initial, 30 dip, 40 confirmation 2 Avoid chasing rallies 3 Track narratives and sector trends weekly 4 Exit during hype crypto or overvaluation stocks Final Insight Big money is made by seeing early, betting with conviction, and holding patiently."
+    },
+    {
+        "vector_id": 18,
+        "chunk_id": 3,
+        "document": "harshad_mehta_investing_playbook.pdf",
+        "page": 1,
+        "source": "harshad_mehta_investing_playbook.pdf",
+        "start_index": 1471,
+        "end_index": 1681,
+        "chunk_length": 210,
+        "text": "4 Exit during hype crypto or overvaluation stocks Final Insight Big money is made by seeing early, betting with conviction, and holding patiently. Avoid noise and focus on capital flow, timing, and positioning."
+    },
+    {
+        "vector_id": 19,
+        "chunk_id": 1,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "Curriculum for B.Tech. In Data Science Course Title Data Analytics with Tableau Semester IV Teaching Scheme Evaluation Scheme Theory Practical Term EVEN TH TU PR Credits TAE CAE ESE INT EXT Course Category C 2 - - 2 10 15 50 - - Course Code 23BTDSL 211 Teaching Mode Offline 2 Total 75 -- Duration of ESE 3 75 Course Objectives 1. To introduce students the basics of Tableau, including the user interface and key features. 2."
+    },
+    {
+        "vector_id": 20,
+        "chunk_id": 2,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "1. To introduce students the basics of Tableau, including the user interface and key features. 2. To provide students with the knowledge of blending and joining data from multiple sources. 3. To encourage students to explore advanced analytics features and create interactive dashboards by combining multiple visualizations. Course Outcomes CO1 Understand the representation of tableau and its fields. CO2 Analyze various data organization that are present in tableau."
+    },
+    {
+        "vector_id": 21,
+        "chunk_id": 3,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "of tableau and its fields. CO2 Analyze various data organization that are present in tableau. CO3 Apply visualization tips in tableau. CO4 Apply the various charts and maps used for data visualization. CO5 Design the Database connection with tableau and forecast the predictions."
+    },
+    {
+        "vector_id": 22,
+        "chunk_id": 4,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "data visualization. CO5 Design the Database connection with tableau and forecast the predictions. Course Outcomes Program Outcomes and Program Specific Outcomes PO 1 PO 2 PO 3 PO 4 PO 5 PO 6 PO 7 PO 8 PO9 PO10 PO11 PO12 PSO 1 PSO 2 CO1 2 2 2 2 1 1 2 CO2 3 3 3 3 3 1 2 CO3 2 2 3 3 3 1 1 1 CO4 2 3 3 2 3 2 2 3 CO5 2 2 3 3 3 2 2 3 Curriculum for B.Tech. In Data Science Course Contents Unit Contents Hours I Unit I Introduction What is Tableau?"
+    },
+    {
+        "vector_id": 23,
+        "chunk_id": 5,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "B.Tech. In Data Science Course Contents Unit Contents Hours I Unit I Introduction What is Tableau? Terminology, Tableau vs Excel, Applications and key factors, Data-types, views of data and records, Measure, Dimension, Discrete and Continuous. 8 II Unit II Organizing and Simplifying Data Drill down and hierarchies, Sorting, Grouping, Parameters, Combine, Sets, Title, Caption, Exporting, Granularity, Worksheet Interface, Managing Metadata, Dashboard, Tableau bins fixed and variable."
+    },
+    {
+        "vector_id": 24,
+        "chunk_id": 6,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "Granularity, Worksheet Interface, Managing Metadata, Dashboard, Tableau bins fixed and variable. 8 III Unit III Data Connections in Tableau Connecting to tableau server, Join and types of join, Data Blending, Joining vs Blending, Filters, size, color, label, tooltip, shapes, detail, font, alignment, shading, borders, calculations, Number and String functions, Logical function, conditional formatting, Rank."
+    },
+    {
+        "vector_id": 25,
+        "chunk_id": 7,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "borders, calculations, Number and String functions, Logical function, conditional formatting, Rank. 8 IV Unit IV Charts and Maps Introduction to Chart, Scatter charts, Line charts, Reference lines, Bubble chart, Bar chart, Stacked chart, Pie chart, Bump chart, Funnel chart, Waterfall chart, Chart Linking Techniques. Introduction to Maps, Map options, Map layers, Word maps, Tree maps."
+    },
+    {
+        "vector_id": 26,
+        "chunk_id": 8,
+        "document": "tableau_syllabus.pdf",
+        "source": "tableau_syllabus.pdf",
+        "page": 1,
+        "text": "Chart Linking Techniques. Introduction to Maps, Map options, Map layers, Word maps, Tree maps. 8 V Unit V Use Cases Custom Territories, Custom Geocoding, Religion Wise population, National Park, Highlighting and Actions, Publishing Reports, Dashboard Designing, Interacting with Tableau online. 8 TextBook 1. Tableau 10 for beginners, version 10.x, Chandraish Sinha Online TL Material 1. httpswww.udemy.com tableau-desktop-a-complete-introduction 2."
     }
 ]

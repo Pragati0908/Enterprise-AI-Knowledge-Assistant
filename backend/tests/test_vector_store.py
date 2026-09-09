@@ -1,6 +1,34 @@
+"""
+===============================================================
+Enterprise AI Knowledge Assistant
+
+Vector Store Test
+
+Purpose
+-------
+Test FAISS vector creation, insertion, saving and loading
+without modifying the application's persistent FAISS index.
+
+IMPORTANT
+---------
+This test uses a temporary FAISS file.
+
+It DOES NOT modify:
+
+    backend/vector_db/faiss.index
+===============================================================
+"""
+
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 from app.services.embedding_service import EmbeddingService
 from app.services.vector_store import VectorStore
 
+
+# ==========================================================
+# TEST DATA
+# ==========================================================
 
 texts = [
 
@@ -15,98 +43,188 @@ texts = [
 ]
 
 
-embeddings = EmbeddingService.generate_embeddings(
+# ==========================================================
+# TEST
+# ==========================================================
 
-    texts
+def test_vector_store():
 
-)
+    print("\n")
+    print("=" * 70)
+    print("VECTOR STORE TEST")
+    print("=" * 70)
 
+    # ------------------------------------------------------
+    # Generate embeddings
+    # ------------------------------------------------------
 
-dimension = len(
+    embeddings = EmbeddingService.generate_embeddings(
+        texts
+    )
 
-    embeddings[0]
+    dimension = len(
+        embeddings[0]
+    )
 
-)
+    print(
+        f"\nEmbedding Dimension : {dimension}"
+    )
 
+    print(
+        f"Total Texts         : {len(texts)}"
+    )
 
-store = VectorStore(
+    # ------------------------------------------------------
+    # Temporary directory
+    # ------------------------------------------------------
 
-    dimension
+    with TemporaryDirectory() as temp_dir:
 
-)
+        temp_path = Path(
+            temp_dir
+        )
 
+        test_index_path = (
+            temp_path
+            / "faiss_test.index"
+        )
 
-store.add_embeddings(
+        print(
+            f"\nTemporary Index     : "
+            f"{test_index_path}"
+        )
 
-    embeddings
+        # --------------------------------------------------
+        # Create isolated VectorStore
+        # --------------------------------------------------
 
-)
+        store = VectorStore(
+            dimension
+        )
 
+        # --------------------------------------------------
+        # IMPORTANT
+        # --------------------------------------------------
+        # VectorStore() may automatically load the
+        # application's persistent FAISS index.
+        #
+        # Therefore explicitly reset the in-memory index
+        # before using it for this isolated test.
+        # --------------------------------------------------
 
-print()
+        store.reset()
 
-print("=" * 60)
-print("VECTOR STORE TEST")
-print("=" * 60)
+        vectors_before = (
+            store.total_vectors()
+        )
 
-print()
+        print(
+            f"\nVectors Before      : "
+            f"{vectors_before}"
+        )
 
-print(
+        # --------------------------------------------------
+        # Add embeddings
+        # --------------------------------------------------
 
-    f"Embedding Dimension : {dimension}"
+        store.add_embeddings(
+            embeddings
+        )
 
-)
+        vectors_after = (
+            store.total_vectors()
+        )
 
-print(
+        print(
+            f"Vectors After       : "
+            f"{vectors_after}"
+        )
 
-    f"Total Texts : {len(texts)}"
+        # --------------------------------------------------
+        # Validate vector count
+        # --------------------------------------------------
 
-)
+        assert vectors_before == 0, (
+            "Temporary test VectorStore "
+            "was not empty."
+        )
 
-print(
+        assert vectors_after == len(
+            embeddings
+        ), (
+            "Unexpected number of vectors "
+            "stored in test VectorStore."
+        )
 
-    f"Total Stored Vectors : {store.total_vectors()}"
+        # --------------------------------------------------
+        # Save to temporary location
+        # --------------------------------------------------
 
-)
+        store.save(
+            test_index_path
+        )
 
+        assert test_index_path.exists(), (
+            "Temporary FAISS index was not created."
+        )
 
-store.save(
+        print(
+            "\nIndex Saved Successfully"
+        )
 
-    "vector_db/faiss.index"
+        # --------------------------------------------------
+        # Load into a new VectorStore
+        # --------------------------------------------------
 
-)
+        new_store = VectorStore(
+            dimension
+        )
 
-print()
+        # The constructor may load the application's
+        # persistent index, so reset first.
 
-print(
+        new_store.reset()
 
-    "Index Saved Successfully"
+        new_store.load(
+            test_index_path
+        )
 
-)
+        loaded_vectors = (
+            new_store.total_vectors()
+        )
 
+        print(
+            "Index Loaded Successfully"
+        )
 
-new_store = VectorStore(
+        print(
+            f"\nLoaded Vectors      : "
+            f"{loaded_vectors}"
+        )
 
-    dimension
+        # --------------------------------------------------
+        # Validate loaded count
+        # --------------------------------------------------
 
-)
+        assert loaded_vectors == len(
+            embeddings
+        ), (
+            "Loaded FAISS vector count "
+            "does not match expected count."
+        )
 
-new_store.load(
+        print("\nTEST PASSED")
 
-    "vector_db/faiss.index"
+    # ------------------------------------------------------
+    # TemporaryDirectory is automatically deleted here.
+    # ------------------------------------------------------
 
-)
+    print(
+        "\nTemporary FAISS index removed."
+    )
 
-print(
+    print(
+        "Production FAISS index was NOT modified."
+    )
 
-    "Index Loaded Successfully"
-
-)
-
-print()
-
-print(
-
-    f"Loaded Vectors : {new_store.total_vectors()}"
-
-)
+    print("\n" + "=" * 70)

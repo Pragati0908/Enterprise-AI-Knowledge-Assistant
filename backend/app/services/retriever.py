@@ -21,19 +21,39 @@ class Retriever:
         self,
         vector_store: VectorStore | None = None,
         metadata_store: MetadataStore | None = None
-   ):
+    ):
+
+        # --------------------------------------------------
+        # Vector Store
+        # --------------------------------------------------
+        #
+        # VectorStore() already loads the existing FAISS
+        # index in its constructor.
+        #
+        # Therefore, DO NOT call vector_store.load() here.
+        # --------------------------------------------------
 
         if vector_store is None:
 
-           vector_store = VectorStore()
+            vector_store = VectorStore()
 
-           vector_store.load()
+        # --------------------------------------------------
+        # Metadata Store
+        # --------------------------------------------------
+        #
+        # MetadataStore() already loads metadata.json
+        # in its constructor.
+        #
+        # Therefore, DO NOT call metadata_store.load() here.
+        # --------------------------------------------------
 
         if metadata_store is None:
 
-           metadata_store = MetadataStore()
+            metadata_store = MetadataStore()
 
-           metadata_store.load()
+        # --------------------------------------------------
+        # Store References
+        # --------------------------------------------------
 
         self.vector_store = vector_store
 
@@ -50,7 +70,7 @@ class Retriever:
     ):
 
         # --------------------------------------------------
-        # Generate query embedding
+        # Generate Query Embedding
         # --------------------------------------------------
 
         query_embedding = EmbeddingService.generate_embedding(
@@ -69,7 +89,7 @@ class Retriever:
         retrieved_chunks = []
 
         # --------------------------------------------------
-        # Match metadata
+        # Match Metadata
         # --------------------------------------------------
 
         for result in results:
@@ -82,7 +102,6 @@ class Retriever:
                 continue
 
             retrieved_chunks.append(
-
                 {
                     "chunk_id": metadata.get("chunk_id"),
                     "document": metadata.get("document"),
@@ -90,7 +109,6 @@ class Retriever:
                     "distance": result["distance"],
                     "text": metadata.get("text", "")
                 }
-
             )
 
         return retrieved_chunks

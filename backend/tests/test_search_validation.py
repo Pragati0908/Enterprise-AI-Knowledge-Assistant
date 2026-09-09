@@ -15,22 +15,16 @@ Responsibilities
 ===============================================================
 """
 
-from fastapi.testclient import TestClient
 
-from app.main import app
-
-
-client = TestClient(app)
-
-
-# ==========================================================
+# ============================================================
 # Test 1 — Search API Response
-# ==========================================================
+# ============================================================
 
-def test_search_response():
+def test_search_response(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "What is OCR?",
             "top_k": 5
@@ -44,7 +38,11 @@ def test_search_response():
     print("\nStatus Code:")
     print(response.status_code)
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     data = response.json()
 
@@ -62,21 +60,26 @@ def test_search_response():
     print("\nTEST 1 PASSED")
 
 
-# ==========================================================
+# ============================================================
 # Test 2 — Validate Result Fields
-# ==========================================================
+# ============================================================
 
-def test_result_fields():
+def test_result_fields(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "What is OCR?",
             "top_k": 5
         }
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     data = response.json()
 
@@ -120,26 +123,34 @@ def test_result_fields():
                 f"{item.get(field)}"
             )
 
-            assert field in item
+            assert field in item, (
+                f"Required field '{field}' "
+                f"is missing from result #{index}."
+            )
 
     print("\nTEST 2 PASSED")
 
 
-# ==========================================================
+# ============================================================
 # Test 3 — Citation Validation
-# ==========================================================
+# ============================================================
 
-def test_citations():
+def test_citations(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "What is OCR?",
             "top_k": 5
         }
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     data = response.json()
 
@@ -152,15 +163,22 @@ def test_citations():
     print("TEST 3 — CITATION VALIDATION")
     print("=" * 70)
 
-    for item in results:
+    for index, item in enumerate(
+        results,
+        start=1
+    ):
 
         citation = item.get(
             "citation"
         )
 
-        assert citation is not None
+        assert citation is not None, (
+            f"Citation is missing from result #{index}."
+        )
 
-        assert citation != ""
+        assert citation != "", (
+            f"Citation is empty in result #{index}."
+        )
 
         document = item["document"]
 
@@ -168,11 +186,20 @@ def test_citations():
 
         chunk_id = item["chunk_id"]
 
-        assert document in citation
+        assert str(document) in citation, (
+            f"Document '{document}' "
+            f"is not present in citation: {citation}"
+        )
 
-        assert str(page) in citation
+        assert str(page) in citation, (
+            f"Page '{page}' "
+            f"is not present in citation: {citation}"
+        )
 
-        assert str(chunk_id) in citation
+        assert str(chunk_id) in citation, (
+            f"Chunk ID '{chunk_id}' "
+            f"is not present in citation: {citation}"
+        )
 
         print(
             f"\n{citation}"
@@ -181,21 +208,26 @@ def test_citations():
     print("\nTEST 3 PASSED")
 
 
-# ==========================================================
+# ============================================================
 # Test 4 — Ranking Validation
-# ==========================================================
+# ============================================================
 
-def test_ranking():
+def test_ranking(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "What is OCR?",
             "top_k": 5
         }
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     data = response.json()
 
@@ -229,18 +261,17 @@ def test_ranking():
 
     ]
 
-    print(
-        "\nDistances:"
-    )
+    print("\nDistances:")
 
     for distance in distances:
 
-        print(
-            distance
-        )
+        print(distance)
 
     assert distances == sorted(
         distances
+    ), (
+        "Search results are not ordered "
+        "by ascending distance."
     )
 
     print(
@@ -251,21 +282,26 @@ def test_ranking():
     print("\nTEST 4 PASSED")
 
 
-# ==========================================================
+# ============================================================
 # Test 5 — Duplicate Validation
-# ==========================================================
+# ============================================================
 
-def test_duplicate_results():
+def test_duplicate_results(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "What is OCR?",
             "top_k": 10
         }
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     data = response.json()
 
@@ -280,21 +316,24 @@ def test_duplicate_results():
 
     seen = set()
 
-    for item in results:
+    for index, item in enumerate(
+        results,
+        start=1
+    ):
 
         unique_key = (
-
             item.get("document"),
-
             item.get("chunk_id")
-
         )
 
         print(
-            f"\nChecking: {unique_key}"
+            f"\nChecking Result #{index}: "
+            f"{unique_key}"
         )
 
-        assert unique_key not in seen
+        assert unique_key not in seen, (
+            f"Duplicate result detected: {unique_key}"
+        )
 
         seen.add(
             unique_key
@@ -307,28 +346,24 @@ def test_duplicate_results():
     print("\nTEST 5 PASSED")
 
 
-# ==========================================================
+# ============================================================
 # Main
-# ==========================================================
+# ============================================================
 
 if __name__ == "__main__":
 
     print("\n")
-
     print("=" * 70)
-    print("DAY 40 — SEARCH, RANKING AND CITATION VALIDATION")
+    print(
+        "DAY 40 — SEARCH, RANKING AND "
+        "CITATION VALIDATION"
+    )
     print("=" * 70)
 
-    test_search_response()
-
-    test_result_fields()
-
-    test_citations()
-
-    test_ranking()
-
-    test_duplicate_results()
+    print("\nRun this file using pytest:")
+    print(
+        "python -m pytest "
+        "tests/test_search_validation.py -v -s"
+    )
 
     print("\n" + "=" * 70)
-    print("ALL TESTS PASSED")
-    print("=" * 70)

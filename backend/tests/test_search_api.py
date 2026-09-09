@@ -1,29 +1,21 @@
 """
 ===============================================================
+Enterprise AI Knowledge Assistant
+
 Search API Test
 ===============================================================
 """
-
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-# ============================================================
-# Test Client
-# ============================================================
-
-client = TestClient(app)
 
 
 # ============================================================
 # Test Search API
 # ============================================================
 
-def test_search_api():
+def test_search_api(client, auth_headers):
 
     response = client.post(
         "/search",
+        headers=auth_headers,
         json={
             "query": "OCR",
             "top_k": 5
@@ -44,7 +36,11 @@ def test_search_api():
     # Validate HTTP Response
     # ========================================================
 
-    assert response.status_code == 200
+    assert response.status_code == 200, (
+        f"Expected status code 200, "
+        f"but received {response.status_code}. "
+        f"Response: {response.text}"
+    )
 
     # ========================================================
     # Validate Response JSON
@@ -52,8 +48,13 @@ def test_search_api():
 
     data = response.json()
 
-    assert "success" in data
-    assert "results" in data
+    assert "success" in data, (
+        "Response does not contain the 'success' field."
+    )
+
+    assert "results" in data, (
+        "Response does not contain the 'results' field."
+    )
 
     # ========================================================
     # Display Successful Test
@@ -73,8 +74,10 @@ if __name__ == "__main__":
     print("SEARCH API TEST")
     print("=" * 70)
 
-    test_search_api()
+    print("\nRun this test using pytest:")
+    print(
+        "python -m pytest "
+        "tests/test_search_api.py -v -s"
+    )
 
     print("\n" + "=" * 70)
-    print("ALL SEARCH API TESTS PASSED")
-    print("=" * 70)

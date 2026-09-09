@@ -1,55 +1,64 @@
 """
-==========================================================
+===============================================================
 Enterprise AI Knowledge Assistant
 
 Embedding API
+===============================================================
 
 Responsibilities
 ----------------
-• Generate document embeddings
-• Add embeddings to persistent FAISS index
-• Add corresponding metadata
-• Preserve previously indexed documents
-• Perform semantic similarity search
-• Maintain FAISS ↔ Metadata alignment
-• Generate citations for search results
+1. Generate document embeddings
+2. Store embeddings in FAISS
+3. Store corresponding metadata
+4. Search the vector database
+5. Maintain FAISS/metadata alignment
+6. Prevent indexing when the vector database is inconsistent
 
-Multiple documents are stored in the SAME FAISS index.
+Important
+---------
+FAISS vector IDs are positional and must correspond to metadata
+records at the same positions.
 
-Example:
+Therefore:
 
-    Document A
-        ↓
-        12 chunks
-        ↓
-    FAISS vectors 0-11
+    FAISS vector count == metadata record count
 
-    Document B
-        ↓
-        15 chunks
-        ↓
-    FAISS vectors 12-26
-
-    Total:
-        27 vectors
-
-Metadata follows exactly the same vector order.
-==========================================================
+must always be true before a new document is indexed.
+===============================================================
 """
 
 from pathlib import Path
+from typing import Any
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+import numpy as np
 
-from app.services.embedding_service import EmbeddingService
-from app.services.vector_store import VectorStore
-from app.services.metadata_store import MetadataStore
-from app.services.citation_service import CitationService
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+)
 
-from app.services.parsers.document_parser import DocumentParser
-from app.services.text_cleaner import TextCleaner
-from app.services.chunker import TextChunker
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+
+from app.db.database import get_db
+
+from app.services.embedding_service import (
+    EmbeddingService,
+)
+
+from app.services.vector_store import (
+    VectorStore,
+)
+
+from app.services.metadata_store import (
+    MetadataStore,
+)
+
+from app.services.document_processing_service import (
+    process_document_file,
+)
 
 
 # ==========================================================
@@ -58,7 +67,7 @@ from app.services.chunker import TextChunker
 
 router = APIRouter(
     prefix="/embeddings",
-    tags=["Embeddings"]
+    tags=["Embeddings"],
 )
 
 
@@ -67,7 +76,9 @@ router = APIRouter(
 # ==========================================================
 
 PROJECT_ROOT = (
-    Path(__file__).resolve().parents[4]
+    Path(__file__)
+    .resolve()
+    .parents[4]
 )
 
 UPLOAD_DIR = (
@@ -82,54 +93,33 @@ VECTOR_DB = (
     / "vector_db"
 )
 
-VECTOR_DB.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
 FAISS_PATH = (
     VECTOR_DB
     / "faiss.index"
 )
 
-
-# ==========================================================
-# Request Models
-# ==========================================================
-
-class IndexRequest(BaseModel):
-
-    filename: str
-
-
-class SearchRequest(BaseModel):
-
-    query: str
-
-    top_k: int = 5
+METADATA_PATH = (
+    VECTOR_DB
+    / "metadata.json"
+)
 
 
 # ==========================================================
-# Persistent Stores
+# Metadata Store
 # ==========================================================
-
-vector_store = None
 
 metadata_store = MetadataStore()
 
 
 # ==========================================================
-# Load Existing Database
+# Determine Embedding Dimension
 # ==========================================================
 
 try:
 
-    # ------------------------------------------------------
-    # Determine embedding dimension
-    # ------------------------------------------------------
-
     test_embedding = (
-        EmbeddingService.generate_embedding(
+        EmbeddingService
+        .generate_embedding(
             "test"
         )
     )
@@ -138,315 +128,523 @@ try:
         test_embedding
     )
 
-    # ------------------------------------------------------
-    # Create VectorStore
-    # ------------------------------------------------------
-
-    vector_store = VectorStore(
-        dimension
-    )
-
-    # ------------------------------------------------------
-    # Load existing FAISS index
-    # ------------------------------------------------------
-
-    if FAISS_PATH.exists():
-
-        vector_store.load()
-
-    else:
-
-        print(
-            "\nNo existing FAISS index found."
-        )
-
-        print(
-            "A new index will be created "
-            "when the first document is indexed.\n"
-        )
-
-    # MetadataStore automatically loads
-    # existing metadata.
-
-    print(
-        "\nExisting Vector Database Status"
-    )
-
-    print(
-        f"Vectors  : "
-        f"{vector_store.total_vectors()}"
-    )
-
-    print(
-        f"Metadata : "
-        f"{metadata_store.total()}"
-    )
-
-    print()
-
-    # ------------------------------------------------------
-    # Validate FAISS ↔ Metadata alignment
-    # ------------------------------------------------------
-
-    if (
-        vector_store.total_vectors()
-        != metadata_store.total()
-    ):
-
-        print(
-            "\nWARNING:"
-        )
-
-        print(
-            "FAISS vector count and metadata "
-            "record count do not match."
-        )
-
-        print(
-            f"FAISS vectors : "
-            f"{vector_store.total_vectors()}"
-        )
-
-        print(
-            f"Metadata      : "
-            f"{metadata_store.total()}"
-        )
-
-        print()
-
-
 except Exception as error:
 
-    print(
-        "\nUnable to initialize vector database."
+    raise RuntimeError(
+        "Unable to initialize embedding model. "
+        f"Error: {error}"
     )
-
-    print(
-        f"Reason : {error}"
-    )
-
-    print(
-        "A new database will be created "
-        "when indexing begins.\n"
-    )
-
-    vector_store = None
 
 
 # ==========================================================
-# Embedding Status
+# Vector Store
 # ==========================================================
 
-@router.get("/status")
+vector_store = VectorStore(
+    dimension=dimension
+)
+
+
+# ==========================================================
+# Initial Vector Database Status
+# ==========================================================
+
+try:
+
+    vectors = (
+        vector_store
+        .total_vectors()
+    )
+
+except Exception:
+
+    vectors = 0
+
+
+metadata_count = len(
+    metadata_store.metadata
+)
+
+
+print()
+print("=" * 70)
+print("EXISTING VECTOR DATABASE STATUS")
+print("=" * 70)
+
+print(
+    f"Vectors   : {vectors}"
+)
+
+print(
+    f"Metadata  : {metadata_count}"
+)
+
+print(
+    f"Dimension : {dimension}"
+)
+
+if vectors != metadata_count:
+
+    print(
+        "WARNING: FAISS vector count and "
+        "metadata record count do not match."
+    )
+
+print(
+    "=" * 70
+)
+
+
+# ==========================================================
+# Helper: Get Vector/Metadata Counts
+# ==========================================================
+
+def get_database_counts():
+    """
+    Return the current FAISS and metadata counts.
+    """
+
+    vector_count = (
+        vector_store.total_vectors()
+    )
+
+    metadata_count = len(
+        metadata_store.metadata
+    )
+
+    return (
+        vector_count,
+        metadata_count,
+    )
+
+
+# ==========================================================
+# Helper: Validate Alignment
+# ==========================================================
+
+def validate_alignment():
+    """
+    Ensure FAISS and metadata contain exactly the same
+    number of records.
+    """
+
+    vector_count, metadata_count = (
+        get_database_counts()
+    )
+
+    if vector_count != metadata_count:
+
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": (
+                    "FAISS vector count and metadata "
+                    "record count do not match."
+                ),
+                "faiss_vectors": vector_count,
+                "metadata_records": metadata_count,
+                "action": (
+                    "Repair the FAISS index before "
+                    "creating new embeddings."
+                ),
+            },
+        )
+
+    return True
+
+
+# ==========================================================
+# Helper: Find Uploaded File
+# ==========================================================
+
+def find_uploaded_file(
+    filename: str,
+) -> Path | None:
+    """
+    Search the uploads directory for a document.
+
+    The project stores uploaded files in extension-specific
+    folders, therefore the complete uploads directory is
+    searched recursively.
+    """
+
+    if not UPLOAD_DIR.exists():
+
+        return None
+
+    direct_path = (
+        UPLOAD_DIR
+        / filename
+    )
+
+    if direct_path.exists():
+
+        return direct_path
+
+
+    # ------------------------------------------------------
+    # Recursive search
+    # ------------------------------------------------------
+
+    for file_path in UPLOAD_DIR.rglob(
+        filename
+    ):
+
+        if file_path.is_file():
+
+            return file_path
+
+
+    return None
+
+
+# ==========================================================
+# GET EMBEDDING STATUS
+# ==========================================================
+
+@router.get(
+    "/status"
+)
 def embedding_status():
+    """
+    Return current FAISS and metadata status.
+    """
 
-    """
-    Return current embedding/vector database status.
-    """
+    vector_count, metadata_count = (
+        get_database_counts()
+    )
 
     return {
-
-        "status":
-            "running",
-
-        "service":
-            "Embedding API",
-
-        "vector_database":
-
-            "initialized"
-
-            if (
-                vector_store
-                and
-                vector_store.total_vectors() > 0
-            )
-
-            else "empty",
-
-        "total_vectors":
-
-            vector_store.total_vectors()
-
-            if vector_store
-
-            else 0,
-
-        "total_metadata":
-
-            metadata_store.total()
-
+        "success": True,
+        "faiss_vectors": vector_count,
+        "metadata_records": metadata_count,
+        "embedding_dimension": dimension,
+        "aligned": (
+            vector_count
+            == metadata_count
+        ),
+        "faiss_path": str(
+            FAISS_PATH
+        ),
+        "metadata_path": str(
+            METADATA_PATH
+        ),
     }
 
 
 # ==========================================================
-# Create Embeddings
+# CREATE EMBEDDINGS
 # ==========================================================
 
-@router.post("/create")
+@router.post(
+    "/create"
+)
 def create_embeddings(
-    request: IndexRequest
+    filename: str,
+    db: Session = Depends(
+        get_db
+    ),
 ):
-
     """
-    Create embeddings for one uploaded document
-    and APPEND them to the existing FAISS index.
+    Generate embeddings for an uploaded document.
 
-    Existing documents remain indexed.
+    Processing flow
+    ---------------
+
+    Uploaded document
+          ↓
+    process_document_file()
+          ↓
+    Extract text
+          ↓
+    Clean text
+          ↓
+    Generate chunks
+          ↓
+    Generate embeddings
+          ↓
+    Add vectors to FAISS
+          ↓
+    Add metadata
+          ↓
+    Save FAISS
+          ↓
+    Save metadata
     """
-
-    global vector_store
 
     # ======================================================
-    # Step 1
-    # Locate Uploaded Document
+    # Validate Filename
     # ======================================================
 
-    supported_extensions = [
+    if not filename:
 
-        "pdf",
-        "docx",
-        "pptx",
-        "xlsx"
-
-    ]
-
-    file_path = None
-
-    for extension in supported_extensions:
-
-        candidate = (
-
-            UPLOAD_DIR
-            / extension
-            / request.filename
-
+        raise HTTPException(
+            status_code=400,
+            detail="Filename is required.",
         )
 
-        if candidate.exists():
 
-            file_path = candidate
+    # ======================================================
+    # Locate Uploaded File
+    # ======================================================
 
-            break
+    file_path = (
+        find_uploaded_file(
+            filename
+        )
+    )
 
     if file_path is None:
 
         raise HTTPException(
-
             status_code=404,
-
             detail=(
-                "Document not found : "
-                f"{request.filename}"
-            )
-
+                f"Uploaded document not found: "
+                f"{filename}"
+            ),
         )
 
+
     # ======================================================
-    # Step 2
-    # Extract Text
+    # Check Existing Document
     # ======================================================
 
     try:
 
-        text = (
-            DocumentParser.parse_document(
-                str(file_path)
+        existing_records = (
+            metadata_store
+            .get_by_document(
+                filename
             )
         )
 
-    except ValueError as error:
+    except Exception:
+
+        existing_records = []
+
+
+    if existing_records:
 
         raise HTTPException(
+            status_code=409,
+            detail={
+                "message": (
+                    "Document has already been "
+                    "indexed."
+                ),
+                "filename": filename,
+                "existing_chunks": len(
+                    existing_records
+                ),
+            },
+        )
 
-            status_code=400,
 
-            detail=str(error)
+    # ======================================================
+    # Validate Current Database Alignment
+    # ======================================================
+    #
+    # This is extremely important.
+    #
+    # If:
+    #
+    #     FAISS = 31
+    #     Metadata = 19
+    #
+    # we MUST NOT add another document.
+    #
+    # Otherwise the mismatch becomes even worse.
+    #
+    # ======================================================
 
+    vectors_before, metadata_before = (
+        get_database_counts()
+    )
+
+    if (
+        vectors_before
+        != metadata_before
+    ):
+
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": (
+                    "Vector database is inconsistent. "
+                    "New embeddings cannot be created."
+                ),
+                "faiss_vectors": vectors_before,
+                "metadata_records": metadata_before,
+                "required": (
+                    "FAISS vector count must equal "
+                    "metadata record count."
+                ),
+            },
+        )
+
+
+    # ======================================================
+    # Process Document
+    # ======================================================
+    #
+    # IMPORTANT:
+    #
+    # document_processing_service.py contains the
+    # module-level function:
+    #
+    #     process_document_file()
+    #
+    # It does NOT contain:
+    #
+    #     DocumentProcessingService
+    #
+    # ======================================================
+
+    try:
+
+        processed = (
+            process_document_file(
+                file_path=file_path,
+                filename=filename,
+                db=db,
+            )
         )
 
     except Exception as error:
 
         raise HTTPException(
-
             status_code=500,
-
             detail=(
-                "Document parsing failed : "
+                "Document processing failed: "
                 f"{error}"
-            )
-
+            ),
         )
 
+
     # ======================================================
-    # Step 3
-    # Clean Text
+    # Validate Processing Result
     # ======================================================
 
-    cleaned_text = (
-        TextCleaner.clean_text(
-            text
-        )
-    )
-
-    if not cleaned_text.strip():
+    if not isinstance(
+        processed,
+        dict
+    ):
 
         raise HTTPException(
-
-            status_code=400,
-
+            status_code=500,
             detail=(
-                "Document contains no usable text."
-            )
-
+                "Document processing returned "
+                "an invalid result."
+            ),
         )
 
+
     # ======================================================
-    # Step 4
-    # Chunk Text
+    # Extract Chunks
     # ======================================================
 
-    chunks = (
-        TextChunker.chunk_text(
-
-            text=cleaned_text,
-
-            source=request.filename,
-
-            chunk_size=800,
-
-            overlap=150
-
-        )
+    chunks = processed.get(
+        "chunks",
+        []
     )
 
     if not chunks:
 
         raise HTTPException(
-
             status_code=400,
-
-            detail="No chunks generated."
-
+            detail=(
+                "No chunks were generated "
+                f"for {filename}"
+            ),
         )
 
+
     # ======================================================
-    # Step 5
+    # Extract Chunk Text
+    # ======================================================
+
+    chunk_texts = []
+
+    for chunk in chunks:
+
+        if isinstance(
+            chunk,
+            dict
+        ):
+
+            chunk_text = chunk.get(
+                "text",
+                ""
+            )
+
+        else:
+
+            chunk_text = str(
+                chunk
+            )
+
+        chunk_text = (
+            chunk_text
+            .strip()
+        )
+
+        if chunk_text:
+
+            chunk_texts.append(
+                chunk_text
+            )
+
+
+    # ======================================================
+    # Validate Chunk Text
+    # ======================================================
+
+    if not chunk_texts:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Generated chunks contain "
+                "no usable text."
+            ),
+        )
+
+
+    # ======================================================
+    # Display Processing Information
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print("EMBEDDING CREATION")
+    print("=" * 70)
+
+    print(
+        f"Document : {filename}"
+    )
+
+    print(
+        f"Chunks   : {len(chunk_texts)}"
+    )
+
+    print(
+        f"FAISS before : {vectors_before}"
+    )
+
+    print(
+        f"Metadata before : {metadata_before}"
+    )
+
+
+    # ======================================================
     # Generate Embeddings
     # ======================================================
-
-    chunk_texts = [
-
-        chunk["text"]
-
-        for chunk in chunks
-
-    ]
 
     try:
 
         embeddings = (
-            EmbeddingService.generate_embeddings(
+            EmbeddingService
+            .generate_embeddings(
                 chunk_texts
             )
         )
@@ -454,470 +652,604 @@ def create_embeddings(
     except Exception as error:
 
         raise HTTPException(
-
             status_code=500,
-
             detail=(
-                "Embedding generation failed : "
+                "Embedding generation failed: "
                 f"{error}"
-            )
-
+            ),
         )
 
-    # IMPORTANT:
-    # Do NOT use:
-    #
-    #     if not embeddings:
-    #
-    # because embeddings may be a NumPy array.
-    #
-    # Use len() instead.
-
-    if (
-        embeddings is None
-        or len(embeddings) == 0
-    ):
-
-        raise HTTPException(
-
-            status_code=400,
-
-            detail="No embeddings generated."
-
-        )
 
     # ======================================================
-    # Step 6
-    # Initialize VectorStore
+    # Convert to NumPy Float32
     # ======================================================
 
-    embedding_dimension = len(
-        embeddings[0]
+    embeddings = np.asarray(
+        embeddings,
+        dtype=np.float32
     )
 
-    if vector_store is None:
-
-        vector_store = VectorStore(
-            embedding_dimension
-        )
-
-        if FAISS_PATH.exists():
-
-            vector_store.load()
 
     # ======================================================
-    # Verify Embedding Dimension
+    # Validate Embedding Shape
+    # ======================================================
+
+    if embeddings.ndim != 2:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Generated embeddings have "
+                "an invalid shape: "
+                f"{embeddings.shape}"
+            ),
+        )
+
+
+    # ======================================================
+    # Validate Embedding Count
     # ======================================================
 
     if (
-        vector_store.dimension
-        != embedding_dimension
+        embeddings.shape[0]
+        != len(chunk_texts)
     ):
 
         raise HTTPException(
-
             status_code=500,
-
-            detail=(
-
-                "Embedding dimension mismatch. "
-
-                f"FAISS dimension = "
-                f"{vector_store.dimension}, "
-
-                f"embedding dimension = "
-                f"{embedding_dimension}"
-
-            )
-
+            detail={
+                "message": (
+                    "Embedding count does not "
+                    "match chunk count."
+                ),
+                "embeddings": int(
+                    embeddings.shape[0]
+                ),
+                "chunks": len(
+                    chunk_texts
+                ),
+            },
         )
 
+
     # ======================================================
-    # Step 7
-    # Determine Starting Vector ID
+    # Validate Embedding Dimension
+    # ======================================================
+
+    embedding_dimension = (
+        embeddings.shape[1]
+    )
+
+    if (
+        embedding_dimension
+        != dimension
+    ):
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": (
+                    "Embedding dimension does "
+                    "not match FAISS dimension."
+                ),
+                "embedding_dimension":
+                    int(
+                        embedding_dimension
+                    ),
+                "faiss_dimension":
+                    dimension,
+            },
+        )
+
+
+    # ======================================================
+    # Record Starting Vector ID
     # ======================================================
 
     starting_vector_id = (
-        vector_store.total_vectors()
+        vectors_before
     )
 
-    print(
-        "\n=================================================="
-    )
-
-    print(
-        "ADDING DOCUMENT TO EXISTING VECTOR DATABASE"
-    )
-
-    print(
-        "=================================================="
-    )
-
-    print(
-        f"Document         : "
-        f"{request.filename}"
-    )
-
-    print(
-        f"Existing vectors : "
-        f"{starting_vector_id}"
-    )
-
-    print(
-        f"New chunks       : "
-        f"{len(chunks)}"
-    )
 
     # ======================================================
-    # Step 8
     # Add Embeddings to FAISS
     # ======================================================
 
-    vector_store.add_embeddings(
-        embeddings
-    )
+    try:
 
-    # ======================================================
-    # Step 9
-    # Create Metadata
-    # ======================================================
-
-    metadata = []
-
-    for offset, chunk in enumerate(
-        chunks
-    ):
-
-        vector_id = (
-            starting_vector_id
-            + offset
+        vector_store.add_embeddings(
+            embeddings
         )
 
-        metadata.append(
+    except Exception as error:
 
-            {
-
-                "vector_id":
-                    vector_id,
-
-                "chunk_id":
-                    chunk.get(
-                        "chunk_id",
-                        offset + 1
-                    ),
-
-                "document":
-                    request.filename,
-
-                "page":
-                    chunk.get(
-                        "page",
-                        1
-                    ),
-
-                "source":
-                    request.filename,
-
-                "start_index":
-                    chunk["start_index"],
-
-                "end_index":
-                    chunk["end_index"],
-
-                "chunk_length":
-                    chunk["chunk_length"],
-
-                "text":
-                    chunk["text"]
-
-            }
-
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Failed to add embeddings "
+                f"to FAISS: {error}"
+            ),
         )
 
-    # ======================================================
-    # Step 10
-    # Append Metadata
-    # ======================================================
-
-    metadata_store.add_many(
-        metadata
-    )
 
     # ======================================================
-    # Step 11
-    # Validate Alignment
+    # Verify FAISS Addition
     # ======================================================
 
-    faiss_count = (
+    vectors_after_add = (
         vector_store.total_vectors()
     )
 
-    metadata_count = (
-        metadata_store.total()
+    expected_vectors = (
+        vectors_before
+        + len(chunk_texts)
     )
 
-    if faiss_count != metadata_count:
+    if (
+        vectors_after_add
+        != expected_vectors
+    ):
 
         raise HTTPException(
-
             status_code=500,
-
-            detail=(
-
-                "FAISS and metadata count mismatch. "
-
-                f"FAISS = {faiss_count}, "
-
-                f"Metadata = {metadata_count}"
-
-            )
-
+            detail={
+                "message": (
+                    "FAISS vector count after "
+                    "insertion is incorrect."
+                ),
+                "before": vectors_before,
+                "expected": expected_vectors,
+                "actual": vectors_after_add,
+            },
         )
 
-    # ======================================================
-    # Step 12
-    # Save FAISS Index
-    # ======================================================
-
-    vector_store.save()
 
     # ======================================================
-    # Step 13
+    # Build Metadata Records
+    # ======================================================
+
+    metadata_records = []
+
+    for index, chunk in enumerate(
+        chunks
+    ):
+
+        if isinstance(
+            chunk,
+            dict
+        ):
+
+            text = chunk.get(
+                "text",
+                ""
+            )
+
+            text = (
+                text
+                .strip()
+            )
+
+            if not text:
+
+                continue
+
+            metadata_record = {
+                "vector_id": (
+                    starting_vector_id
+                    + len(
+                        metadata_records
+                    )
+                ),
+                "chunk_id": chunk.get(
+                    "chunk_id",
+                    (
+                        starting_vector_id
+                        + len(
+                            metadata_records
+                        )
+                    ),
+                ),
+                "document": chunk.get(
+                    "document",
+                    filename,
+                ),
+                "source": chunk.get(
+                    "source",
+                    filename,
+                ),
+                "page": chunk.get(
+                    "page",
+                    1,
+                ),
+                "text": text,
+            }
+
+        else:
+
+            text = str(
+                chunk
+            ).strip()
+
+            if not text:
+
+                continue
+
+            metadata_record = {
+                "vector_id": (
+                    starting_vector_id
+                    + len(
+                        metadata_records
+                    )
+                ),
+                "chunk_id": (
+                    starting_vector_id
+                    + len(
+                        metadata_records
+                    )
+                ),
+                "document": filename,
+                "source": filename,
+                "page": 1,
+                "text": text,
+            }
+
+        metadata_records.append(
+            metadata_record
+        )
+
+
+    # ======================================================
+    # Validate Metadata Count
+    # ======================================================
+
+    if (
+        len(metadata_records)
+        != len(chunk_texts)
+    ):
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": (
+                    "Metadata record count does "
+                    "not match embedding count."
+                ),
+                "metadata": len(
+                    metadata_records
+                ),
+                "embeddings": len(
+                    chunk_texts
+                ),
+            },
+        )
+
+
+    # ======================================================
+    # Add Metadata
+    # ======================================================
+
+    try:
+
+        metadata_store.add_many(
+            metadata_records
+        )
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Failed to store metadata: "
+                f"{error}"
+            ),
+        )
+
+
+    # ======================================================
+    # Validate FAISS/Metadata Alignment
+    # ======================================================
+
+    vectors_after_metadata = (
+        vector_store.total_vectors()
+    )
+
+    metadata_after = len(
+        metadata_store.metadata
+    )
+
+    if (
+        vectors_after_metadata
+        != metadata_after
+    ):
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "message": (
+                    "FAISS and metadata are "
+                    "not aligned after indexing."
+                ),
+                "faiss_vectors":
+                    vectors_after_metadata,
+                "metadata_records":
+                    metadata_after,
+            },
+        )
+
+
+    # ======================================================
+    # Save FAISS
+    # ======================================================
+
+    try:
+
+        vector_store.save()
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Failed to save FAISS index: "
+                f"{error}"
+            ),
+        )
+
+
+    # ======================================================
     # Save Metadata
     # ======================================================
 
-    metadata_store.save()
+    try:
+
+        metadata_store.save()
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Failed to save metadata: "
+                f"{error}"
+            ),
+        )
+
 
     # ======================================================
-    # Final Logging
+    # Final Verification
     # ======================================================
 
+    final_vectors = (
+        vector_store.total_vectors()
+    )
+
+    final_metadata = len(
+        metadata_store.metadata
+    )
+
+    aligned = (
+        final_vectors
+        == final_metadata
+    )
+
+
+    # ======================================================
+    # Final Output
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print("EMBEDDING CREATION COMPLETE")
+    print("=" * 70)
+
     print(
-        "\n=================================================="
+        f"Document       : {filename}"
     )
 
     print(
-        "DOCUMENT INDEXED SUCCESSFULLY"
+        f"Chunks         : {len(chunk_texts)}"
     )
 
     print(
-        "=================================================="
+        f"Vectors before : {vectors_before}"
     )
 
     print(
-        f"Document           : "
-        f"{request.filename}"
+        f"Vectors after  : {final_vectors}"
     )
 
     print(
-        f"New chunks         : "
-        f"{len(chunks)}"
+        f"Metadata       : {final_metadata}"
     )
 
     print(
-        f"Embedding dimension: "
-        f"{embedding_dimension}"
+        f"Aligned        : {aligned}"
     )
 
     print(
-        f"Total vectors      : "
-        f"{faiss_count}"
+        "=" * 70
     )
 
-    print(
-        f"Total metadata     : "
-        f"{metadata_count}"
-    )
 
-    print(
-        "==================================================\n"
-    )
+    # ======================================================
+    # Return Response
+    # ======================================================
 
     return {
-
-        "message":
-            "Document indexed successfully.",
-
-        "document":
-            request.filename,
-
-        "total_chunks":
-            len(chunks),
-
-        "embedding_dimension":
-            embedding_dimension,
-
-        "new_vectors":
-            len(chunks),
-
-        "previous_vectors":
-            starting_vector_id,
-
-        "total_vectors":
-            faiss_count,
-
-        "total_metadata":
-            metadata_count
-
+        "success": True,
+        "message": (
+            "Embeddings created successfully."
+        ),
+        "filename": filename,
+        "chunks": len(
+            chunk_texts
+        ),
+        "embeddings": len(
+            embeddings
+        ),
+        "embedding_dimension": dimension,
+        "faiss_vectors_before":
+            vectors_before,
+        "faiss_vectors_after":
+            final_vectors,
+        "metadata_records":
+            final_metadata,
+        "aligned": aligned,
+        "analytics_id":
+            processed.get(
+                "analytics_id"
+            ),
     }
 
 
 # ==========================================================
-# Similarity Search
+# SEARCH EMBEDDINGS
 # ==========================================================
 
-@router.post("/search")
+@router.post(
+    "/search"
+)
 def search_embeddings(
-    request: SearchRequest
+    query: str,
+    top_k: int = 5,
 ):
-
     """
-    Search all indexed documents using FAISS.
-
-    Flow:
-
-        Query
-          ↓
-        Query Embedding
-          ↓
-        FAISS Search
-          ↓
-        Vector ID
-          ↓
-        MetadataStore
-          ↓
-        CitationService
-          ↓
-        Search Result + Citation
+    Search the FAISS vector database.
     """
 
-    global vector_store
-
     # ======================================================
-    # Step 1
-    # Validate Vector Database
+    # Validate Query
     # ======================================================
 
-    if (
-        vector_store is None
-        or
-        vector_store.total_vectors() == 0
-    ):
+    if not query or not query.strip():
 
         raise HTTPException(
-
             status_code=400,
-
-            detail="Vector database is empty."
-
+            detail="Query is required.",
         )
 
+
     # ======================================================
-    # Step 2
-    # Validate FAISS ↔ Metadata Alignment
+    # Validate Top K
     # ======================================================
 
+    if top_k <= 0:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "top_k must be greater than zero."
+            ),
+        )
+
+
+    # ======================================================
+    # Validate Alignment
+    # ======================================================
+
+    vector_count, metadata_count = (
+        get_database_counts()
+    )
+
     if (
-        metadata_store.total()
-        != vector_store.total_vectors()
+        vector_count
+        != metadata_count
     ):
 
         raise HTTPException(
-
-            status_code=500,
-
-            detail=(
-
-                "FAISS and metadata are out of sync. "
-
-                f"FAISS = "
-                f"{vector_store.total_vectors()}, "
-
-                f"Metadata = "
-                f"{metadata_store.total()}"
-
-            )
-
+            status_code=409,
+            detail={
+                "message": (
+                    "FAISS vector count and "
+                    "metadata count do not match."
+                ),
+                "faiss_vectors":
+                    vector_count,
+                "metadata_records":
+                    metadata_count,
+            },
         )
 
+
     # ======================================================
-    # Step 3
+    # Validate Empty Database
+    # ======================================================
+
+    if vector_count == 0:
+
+        return {
+            "success": True,
+            "query": query,
+            "top_k": top_k,
+            "results": [],
+            "total_results": 0,
+        }
+
+
+    # ======================================================
     # Generate Query Embedding
     # ======================================================
 
     try:
 
         query_embedding = (
-            EmbeddingService.generate_embedding(
-                request.query
+            EmbeddingService
+            .generate_embedding(
+                query
             )
         )
 
     except Exception as error:
 
         raise HTTPException(
-
             status_code=500,
-
             detail=(
-
-                "Query embedding generation failed : "
+                "Query embedding generation failed: "
                 f"{error}"
-
-            )
-
+            ),
         )
 
+
     # ======================================================
-    # Step 4
     # Search FAISS
     # ======================================================
 
     try:
 
-        results = vector_store.search(
-
-            query_embedding,
-
-            request.top_k
-
+        results = (
+            vector_store.search(
+                query_embedding,
+                top_k
+            )
         )
 
     except Exception as error:
 
         raise HTTPException(
-
             status_code=500,
-
             detail=(
-
-                "FAISS similarity search failed : "
+                "FAISS search failed: "
                 f"{error}"
-
-            )
-
+            ),
         )
 
+
     # ======================================================
-    # Step 5
-    # Convert FAISS Result → Metadata
+    # Map Results to Metadata
     # ======================================================
 
-    output = []
+    search_results = []
 
     for result in results:
 
-        # --------------------------------------------------
-        # FAISS gives us vector_id
-        # --------------------------------------------------
-
-        vector_id = (
-            result["vector_id"]
+        vector_id = result.get(
+            "vector_id"
         )
 
-        # --------------------------------------------------
-        # Retrieve corresponding metadata
-        # --------------------------------------------------
+        distance = result.get(
+            "distance"
+        )
+
 
         metadata = (
             metadata_store.get(
@@ -929,153 +1261,45 @@ def search_embeddings(
 
             continue
 
-        # ==================================================
-        # IMPORTANT
-        # Build ONE combined result.
-        #
-        # CitationService receives the SAME information
-        # that came from FAISS + MetadataStore.
-        # ==================================================
 
-        result_with_metadata = {
-
-            "vector_id":
-                vector_id,
-
-            "chunk_id":
-                metadata.get(
-                    "chunk_id",
-                    "Unknown"
+        search_results.append(
+            {
+                "vector_id": vector_id,
+                "chunk_id": metadata.get(
+                    "chunk_id"
                 ),
-
-            "document":
-                metadata.get(
-                    "document",
-                    "Unknown document"
+                "document": metadata.get(
+                    "document"
                 ),
-
-            "page":
-                metadata.get(
+                "source": metadata.get(
+                    "source",
+                    metadata.get(
+                        "document"
+                    )
+                ),
+                "page": metadata.get(
                     "page",
                     1
                 ),
-
-            "source":
-                metadata.get(
-                    "source",
-                    ""
-                ),
-
-            "start_index":
-                metadata.get(
-                    "start_index",
-                    0
-                ),
-
-            "end_index":
-                metadata.get(
-                    "end_index",
-                    0
-                ),
-
-            "chunk_length":
-                metadata.get(
-                    "chunk_length",
-                    0
-                ),
-
-            "distance":
-                round(
-                    result["distance"],
-                    4
-                ),
-
-            "text":
-                metadata.get(
+                "text": metadata.get(
                     "text",
                     ""
-                )
-
-        }
-
-        # ==================================================
-        # STEP 5 / CITATION GENERATION
-        # ==================================================
-
-        citation = (
-            CitationService.create_citation(
-                result_with_metadata
-            )
+                ),
+                "distance": distance,
+            }
         )
 
-        # ==================================================
-        # Add Citation to Search Result
-        # ==================================================
-
-        result_with_metadata["citation"] = (
-            citation["citation"]
-        )
-
-        # Optional structured citation fields
-        # are also returned so the frontend can
-        # use them independently if required.
-
-        result_with_metadata["citation_document"] = (
-            citation["document"]
-        )
-
-        result_with_metadata["citation_page"] = (
-            citation["page"]
-        )
-
-        result_with_metadata["citation_chunk"] = (
-            citation["chunk_id"]
-        )
-
-        # --------------------------------------------------
-        # Add final result
-        # --------------------------------------------------
-
-        output.append(
-            result_with_metadata
-        )
 
     # ======================================================
-    # Step 6
-    # Calculate Documents Found
-    # ======================================================
-
-    documents_found = len(
-
-        set(
-
-            item["document"]
-
-            for item in output
-
-        )
-
-    )
-
-    # ======================================================
-    # Return Search Results
+    # Return Results
     # ======================================================
 
     return {
-
-        "query":
-            request.query,
-
-        "top_k":
-            request.top_k,
-
-        "total_results":
-            len(output),
-
-        "documents_found":
-            documents_found,
-
-        "results":
-            output
-
+        "success": True,
+        "query": query,
+        "top_k": top_k,
+        "results": search_results,
+        "total_results": len(
+            search_results
+        ),
     }

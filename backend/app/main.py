@@ -1,3 +1,11 @@
+"""
+===============================================================
+Enterprise AI Knowledge Assistant
+
+Main FastAPI Application
+===============================================================
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,13 +14,14 @@ from app.core.exceptions import global_exception_handler
 
 from app.middleware.request_logger import RequestLoggerMiddleware
 
+
 # ==========================================================
 # Database Imports
 # ==========================================================
 
 from app.db.database import (
     Base,
-    engine
+    engine,
 )
 
 from app.db import models
@@ -34,7 +43,7 @@ from app.api.endpoints.extraction import router as extraction_router
 
 
 # ==========================================================
-# Create Database Tables - Day 46
+# Create Database Tables
 # ==========================================================
 
 Base.metadata.create_all(
@@ -47,13 +56,9 @@ Base.metadata.create_all(
 # ==========================================================
 
 app = FastAPI(
-
     title=settings.APP_NAME,
-
     description="Production Ready RAG Platform",
-
-    version=settings.VERSION
-
+    version=settings.VERSION,
 )
 
 
@@ -62,24 +67,16 @@ app = FastAPI(
 # ==========================================================
 
 app.add_middleware(
-
     RequestLoggerMiddleware
-
 )
 
 
 app.add_middleware(
-
     CORSMiddleware,
-
     allow_origins=["*"],
-
     allow_credentials=True,
-
     allow_methods=["*"],
-
-    allow_headers=["*"]
-
+    allow_headers=["*"],
 )
 
 
@@ -88,11 +85,8 @@ app.add_middleware(
 # ==========================================================
 
 app.add_exception_handler(
-
     Exception,
-
-    global_exception_handler
-
+    global_exception_handler,
 )
 
 
@@ -102,13 +96,13 @@ app.add_exception_handler(
 
 @app.get("/")
 def home():
+    """
+    Root endpoint used to verify that the API is running.
+    """
 
     return {
-
         "message": "Enterprise AI Knowledge Assistant API",
-
-        "status": "Running Successfully"
-
+        "status": "Running Successfully",
     }
 
 
@@ -118,21 +112,17 @@ def home():
 
 @app.get("/settings")
 def get_settings():
+    """
+    Return application configuration information.
+    """
 
     return {
-
         "app_name": settings.APP_NAME,
-
         "version": settings.VERSION,
-
         "debug": settings.DEBUG,
-
         "host": settings.HOST,
-
         "port": settings.PORT,
-
-        "log_level": settings.LOG_LEVEL
-
+        "log_level": settings.LOG_LEVEL,
     }
 
 
@@ -142,11 +132,12 @@ def get_settings():
 
 @app.get("/error")
 def test_error():
+    """
+    Test endpoint for the global exception handler.
+    """
 
     raise Exception(
-
         "Testing error handler"
-
     )
 
 
@@ -155,63 +146,37 @@ def test_error():
 # ==========================================================
 
 app.include_router(
-
     health_router
-
 )
 
-
 app.include_router(
-
     auth_router
-
 )
 
-
 app.include_router(
-
     upload_router
-
 )
 
-
 app.include_router(
-
     documents_router
-
 )
 
-
 app.include_router(
-
     ocr_router
-
 )
 
-
 app.include_router(
-
     embeddings_router
-
 )
 
-
 app.include_router(
-
     chat_router
-
 )
 
-
 app.include_router(
-
     search_router
-
 )
 
-
 app.include_router(
-
     extraction_router
-
 )

@@ -1,0 +1,4 @@
+﻿id,username,email,hashed_password,created_at
+1,testuser,testuser@example.com,$2b$12$0G52nUWw1U6Tln.af72nSef8lT8zEj3c0F37fL51B6BvCeU/M15vm,2026-08-25 10:00:39.350326
+2,testuser_5cc8e950,testuser_5cc8e950@example.com,$2b$12$BuMrktYScddy6.fKA5AKuumBTUkD2Qa7qtGrlgmQwmAabVOhIan9S,2026-08-25 10:06:28.003139
+3,Pragati Agrawal,pragati.688643@gmail.com,$2b$12$iU6HDLPYfH8ne.MKfuveXOarT.89PmzPJn/N9p94J7hkFzCtFW4P2,2026-08-26 09:58:57.860629

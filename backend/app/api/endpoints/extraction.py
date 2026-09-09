@@ -18,6 +18,11 @@ Supported extraction types
 Authentication
 --------------
 JWT Bearer Token Required
+
+Analytics
+---------
+Extraction activity is recorded in the
+extraction_analytics database table.
 ===============================================================
 """
 
@@ -26,20 +31,50 @@ from fastapi import (
     Depends
 )
 
+from sqlalchemy.orm import Session
+
+
+# ==========================================================
+# Authentication
+# ==========================================================
+
 from app.auth.dependencies import (
     get_current_user
+)
+
+
+# ==========================================================
+# Database
+# ==========================================================
+
+from app.db.database import (
+    get_db
 )
 
 from app.db.models import (
     User
 )
 
+
+# ==========================================================
+# Schemas
+# ==========================================================
+
 from app.schemas.extraction import (
     ExtractionRequest
 )
 
+
+# ==========================================================
+# Services
+# ==========================================================
+
 from app.services.extraction_service import (
     ExtractionService
+)
+
+from app.services.analytics_service import (
+    AnalyticsService
 )
 
 
@@ -48,10 +83,13 @@ from app.services.extraction_service import (
 # ==========================================================
 
 router = APIRouter(
+
     prefix="",
+
     tags=[
         "Information Extraction"
     ]
+
 )
 
 
@@ -72,6 +110,14 @@ def extract_information(
 
     current_user: User = Depends(
         get_current_user
+    ),
+
+    # ======================================================
+    # Database Session
+    # ======================================================
+
+    db: Session = Depends(
+        get_db
     )
 
 ):
@@ -83,9 +129,11 @@ def extract_information(
     text = request.text.strip()
 
     extraction_type = (
+
         request.extraction_type
         .strip()
         .lower()
+
     )
 
 
@@ -95,11 +143,45 @@ def extract_information(
 
     if extraction_type == "all":
 
-        return (
-            ExtractionService.extract(
-                text
-            )
+        result = ExtractionService.extract(
+            text
         )
+
+
+        # ==================================================
+        # Record Analytics
+        # ==================================================
+
+        invoice = result.get(
+            "invoice",
+            {}
+        )
+
+
+        AnalyticsService.record_extraction(
+
+            db=db,
+
+            username=current_user.username,
+
+            extraction_type="all",
+
+            invoice_number=invoice.get(
+                "invoice_number"
+            ),
+
+            vendor=invoice.get(
+                "vendor"
+            ),
+
+            total_amount=invoice.get(
+                "total_amount"
+            )
+
+        )
+
+
+        return result
 
 
     # ======================================================
@@ -108,17 +190,37 @@ def extract_information(
 
     if extraction_type == "dates":
 
+        dates = (
+            ExtractionService.extract_dates(
+                text
+            )
+        )
+
+
+        # ==================================================
+        # Record Analytics
+        # ==================================================
+
+        AnalyticsService.record_extraction(
+
+            db=db,
+
+            username=current_user.username,
+
+            extraction_type="dates"
+
+        )
+
+
         return {
 
             "success": True,
 
-            "dates":
-                ExtractionService.extract_dates(
-                    text
-                ),
+            "dates": dates,
 
             "message":
                 "Date extraction completed."
+
         }
 
 
@@ -134,6 +236,22 @@ def extract_information(
             )
         )
 
+
+        # ==================================================
+        # Record Analytics
+        # ==================================================
+
+        AnalyticsService.record_extraction(
+
+            db=db,
+
+            username=current_user.username,
+
+            extraction_type="entities"
+
+        )
+
+
         return {
 
             "success": True,
@@ -146,6 +264,7 @@ def extract_information(
 
             "message":
                 "Entity extraction completed."
+
         }
 
 
@@ -155,17 +274,49 @@ def extract_information(
 
     if extraction_type == "invoice":
 
+        invoice = (
+            ExtractionService.extract_invoice(
+                text
+            )
+        )
+
+
+        # ==================================================
+        # Record Analytics
+        # ==================================================
+
+        AnalyticsService.record_extraction(
+
+            db=db,
+
+            username=current_user.username,
+
+            extraction_type="invoice",
+
+            invoice_number=invoice.get(
+                "invoice_number"
+            ),
+
+            vendor=invoice.get(
+                "vendor"
+            ),
+
+            total_amount=invoice.get(
+                "total_amount"
+            )
+
+        )
+
+
         return {
 
             "success": True,
 
-            "invoice":
-                ExtractionService.extract_invoice(
-                    text
-                ),
+            "invoice": invoice,
 
             "message":
                 "Invoice extraction completed."
+
         }
 
 
@@ -181,9 +332,15 @@ def extract_information(
             "Unsupported extraction type.",
 
         "supported_types": [
+
             "all",
+
             "dates",
+
             "entities",
+
             "invoice"
+
         ]
+
     }
