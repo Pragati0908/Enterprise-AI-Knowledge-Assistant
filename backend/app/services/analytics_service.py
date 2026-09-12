@@ -9,6 +9,7 @@ Analytics Service
 from typing import Optional
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.db.models import (
@@ -107,7 +108,8 @@ class AnalyticsService:
             record = (
                 db.query(DocumentAnalytics)
                 .filter(
-                    DocumentAnalytics.filename == filename
+                    func.lower(DocumentAnalytics.filename)
+                    == filename.strip().lower()
                 )
                 .order_by(
                     DocumentAnalytics.id.desc()
@@ -153,7 +155,8 @@ class AnalyticsService:
             record = (
                 db.query(DocumentAnalytics)
                 .filter(
-                    DocumentAnalytics.filename == filename
+                    func.lower(DocumentAnalytics.filename)
+                    == filename.strip().lower()
                 )
                 .order_by(
                     DocumentAnalytics.id.desc()
