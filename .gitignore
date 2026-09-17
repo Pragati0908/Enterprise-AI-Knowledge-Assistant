@@ -250,3 +250,6 @@ tmp/
 
 # Jupyter notebooks checkpoints
 .ipynb_checkpoints/
+
+# Power BI
+powerbi/*.pbix
