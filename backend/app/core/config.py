@@ -5,35 +5,42 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
 
-    APP_NAME: str
-    VERSION: str
+    # Application
+    APP_NAME: str = "Enterprise AI Knowledge Assistant"
+    VERSION: str = "1.0.0"
 
-    DEBUG: bool
+    # Debug / API
+    DEBUG: bool = False
+    API_PREFIX: str = "/api"
 
-    API_PREFIX: str
+    # Server
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
 
-    HOST: str
+    # Authentication
+    # This is only a safe fallback for local/CI testing.
+    # Production should provide SECRET_KEY through an environment variable.
+    SECRET_KEY: str = "ci-development-secret-key-change-in-production"
 
-    PORT: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    SECRET_KEY: str
+    # Upload configuration
+    MAX_UPLOAD_SIZE: int = 10485760
 
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    ALLOWED_EXTENSIONS: str = "pdf,docx,pptx,xlsx"
 
-    MAX_UPLOAD_SIZE: int
-
-    ALLOWED_EXTENSIONS: str
-
-    LOG_LEVEL: str
+    # Logging
+    LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(
-        env_file=".env"
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 
 @lru_cache
-def get_settings():
-
+def get_settings() -> Settings:
     return Settings()
 
 
