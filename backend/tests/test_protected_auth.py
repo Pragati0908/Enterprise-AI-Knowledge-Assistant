@@ -6,6 +6,8 @@ Protected Authentication Test
 ===============================================================
 """
 
+import uuid
+
 from fastapi.testclient import (
     TestClient
 )
@@ -32,6 +34,57 @@ def test_protected_route():
 
 
     # ==========================================================
+    # Create a unique test user
+    # ==========================================================
+
+    username = (
+        f"protected_test_{uuid.uuid4().hex[:8]}"
+    )
+
+    password = (
+        "Password123"
+    )
+
+
+    # ==========================================================
+    # Register Test User
+    # ==========================================================
+
+    register_response = client.post(
+
+        "/auth/register",
+
+        json={
+
+            "username":
+                username,
+
+            "password":
+                password
+
+        }
+
+    )
+
+
+    print()
+
+    print(
+        "Registration Status:"
+    )
+
+    print(
+        register_response.status_code
+    )
+
+
+    assert (
+        register_response.status_code
+        in (200, 201)
+    )
+
+
+    # ==========================================================
     # Login
     # ==========================================================
 
@@ -42,10 +95,10 @@ def test_protected_route():
         json={
 
             "username":
-                "testuser",
+                username,
 
             "password":
-                "Password123"
+                password
 
         }
 
