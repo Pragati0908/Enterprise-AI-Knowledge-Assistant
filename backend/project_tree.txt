@@ -1,0 +1,446 @@
+Folder PATH listing
+Volume serial number is B2E8-D4B6
+C:.
+|   .coverage
+|   .env
+|   enterprise_ai.db
+|   export_powerbi_data.py
+|   project_tree.txt
+|   pytest.ini
+|   requirements.txt
+|   __init__.py
+|   
++---.pytest_cache
+|   |   .gitignore
+|   |   CACHEDIR.TAG
+|   |   README.md
+|   |   
+|   \---v
+|       \---cache
+|               lastfailed
+|               nodeids
+|               
++---app
+|   |   main.py
+|   |   __init__.py
+|   |   
+|   +---api
+|   |   |   __init__.py
+|   |   |   
+|   |   +---endpoints
+|   |   |   |   auth.py
+|   |   |   |   chat.py
+|   |   |   |   documents.py
+|   |   |   |   embeddings.py
+|   |   |   |   extraction.py
+|   |   |   |   health.py
+|   |   |   |   New Python Source File.py
+|   |   |   |   ocr.py
+|   |   |   |   parser.py
+|   |   |   |   search.py
+|   |   |   |   upload.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           auth.cpython-314.pyc
+|   |   |           chat.cpython-314.pyc
+|   |   |           documents.cpython-314.pyc
+|   |   |           embeddings.cpython-314.pyc
+|   |   |           extraction.cpython-314.pyc
+|   |   |           health.cpython-314.pyc
+|   |   |           ocr.cpython-314.pyc
+|   |   |           parser.cpython-314.pyc
+|   |   |           search.cpython-314.pyc
+|   |   |           upload.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   \---__pycache__
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---auth
+|   |   |   dependencies.py
+|   |   |   jwt.py
+|   |   |   security.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           dependencies.cpython-314.pyc
+|   |           jwt.cpython-314.pyc
+|   |           security.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---core
+|   |   |   config.py
+|   |   |   constants.py
+|   |   |   exceptions.py
+|   |   |   security.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           config.cpython-314.pyc
+|   |           exceptions.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---database
+|   +---db
+|   |   |   database.py
+|   |   |   models.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           database.cpython-314.pyc
+|   |           models.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---logs
+|   +---middleware
+|   |   |   request_logger.py
+|   |   |   
+|   |   \---__pycache__
+|   |           request_logger.cpython-314.pyc
+|   |           
+|   +---models
+|   +---routers
+|   +---schemas
+|   |   |   auth.py
+|   |   |   extraction.py
+|   |   |   search.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           auth.cpython-314.pyc
+|   |           extraction.cpython-314.pyc
+|   |           search.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---services
+|   |   |   analytics_service.py
+|   |   |   chunker.py
+|   |   |   citation_service.py
+|   |   |   document_processing_service.py
+|   |   |   document_processor.py
+|   |   |   embedding_service.py
+|   |   |   extraction_service.py
+|   |   |   llm_service.py
+|   |   |   metadata_store.py
+|   |   |   ocr_service.py
+|   |   |   prompt_builder.py
+|   |   |   rag_service.py
+|   |   |   retriever.py
+|   |   |   search_service.py
+|   |   |   text_cleaner.py
+|   |   |   vector_store.py
+|   |   |   __init__.py
+|   |   |   
+|   |   +---ocr
+|   |   |   |   image_ocr.py
+|   |   |   |   pdf_ocr.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           image_ocr.cpython-314.pyc
+|   |   |           pdf_ocr.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---parsers
+|   |   |   |   document_parser.py
+|   |   |   |   docx_parser.py
+|   |   |   |   pdf_parser.py
+|   |   |   |   pptx_parser.py
+|   |   |   |   xlsx_parser.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           document_parser.cpython-314.pyc
+|   |   |           docx_parser.cpython-314.pyc
+|   |   |           pdf_parser.cpython-314.pyc
+|   |   |           pptx_parser.cpython-314.pyc
+|   |   |           xlsx_parser.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   \---__pycache__
+|   |           analytics_service.cpython-314.pyc
+|   |           chunker.cpython-314.pyc
+|   |           citation_service.cpython-314.pyc
+|   |           document_processing_service.cpython-314.pyc
+|   |           document_processor.cpython-314.pyc
+|   |           embedding_service.cpython-314.pyc
+|   |           extraction_service.cpython-314.pyc
+|   |           llm_service.cpython-314.pyc
+|   |           metadata_store.cpython-314.pyc
+|   |           ocr_service.cpython-314.pyc
+|   |           prompt_builder.cpython-314.pyc
+|   |           rag_service.cpython-314.pyc
+|   |           retriever.cpython-314.pyc
+|   |           search_service.cpython-314.pyc
+|   |           text_cleaner.cpython-314.pyc
+|   |           vector_store.cpython-314.pyc
+|   |           __init__.cpython-314.pyc
+|   |           
+|   +---static
+|   +---templates
+|   +---utils
+|   |   |   logger.py
+|   |   |   
+|   |   \---__pycache__
+|   |           logger.cpython-314.pyc
+|   |           
+|   \---__pycache__
+|           main.cpython-314.pyc
+|           __init__.cpython-314.pyc
+|           
++---docs
+|       Week11_commands.md
+|       week11_performance_report.md
+|       week11_testing_and_optimization_report.md
+|       week11_warning_review.md
+|       
++---htmlcov
+|       .gitignore
+|       class_index.html
+|       coverage_html_cb_188fc9a4.js
+|       favicon_32_cb_c827f16f.png
+|       function_index.html
+|       index.html
+|       keybd_closed_cb_900cfef5.png
+|       status.json
+|       style_cb_0853b3de.css
+|       z_0ec34f412373fbb4_auth_py.html
+|       z_0ec34f412373fbb4_chat_py.html
+|       z_0ec34f412373fbb4_documents_py.html
+|       z_0ec34f412373fbb4_embeddings_py.html
+|       z_0ec34f412373fbb4_extraction_py.html
+|       z_0ec34f412373fbb4_health_py.html
+|       z_0ec34f412373fbb4_ocr_py.html
+|       z_0ec34f412373fbb4_search_py.html
+|       z_0ec34f412373fbb4_upload_py.html
+|       z_0ec34f412373fbb4___init___py.html
+|       z_311acb9c3d04c524_database_py.html
+|       z_311acb9c3d04c524_models_py.html
+|       z_311acb9c3d04c524___init___py.html
+|       z_44edb72147bcffed_dependencies_py.html
+|       z_44edb72147bcffed_jwt_py.html
+|       z_44edb72147bcffed_security_py.html
+|       z_44edb72147bcffed___init___py.html
+|       z_4a9cca768ff3c21b___init___py.html
+|       z_4c37ce8615b5aa70_analytics_service_py.html
+|       z_4c37ce8615b5aa70_chunker_py.html
+|       z_4c37ce8615b5aa70_citation_service_py.html
+|       z_4c37ce8615b5aa70_document_processing_service_py.html
+|       z_4c37ce8615b5aa70_document_processor_py.html
+|       z_4c37ce8615b5aa70_embedding_service_py.html
+|       z_4c37ce8615b5aa70_extraction_service_py.html
+|       z_4c37ce8615b5aa70_llm_service_py.html
+|       z_4c37ce8615b5aa70_metadata_store_py.html
+|       z_4c37ce8615b5aa70_ocr_service_py.html
+|       z_4c37ce8615b5aa70_prompt_builder_py.html
+|       z_4c37ce8615b5aa70_rag_service_py.html
+|       z_4c37ce8615b5aa70_retriever_py.html
+|       z_4c37ce8615b5aa70_search_service_py.html
+|       z_4c37ce8615b5aa70_text_cleaner_py.html
+|       z_4c37ce8615b5aa70_vector_store_py.html
+|       z_4c37ce8615b5aa70___init___py.html
+|       z_4d822d37352b2eec_image_ocr_py.html
+|       z_4d822d37352b2eec_pdf_ocr_py.html
+|       z_4d822d37352b2eec___init___py.html
+|       z_5f5a17c013354698_main_py.html
+|       z_5f5a17c013354698___init___py.html
+|       z_72f197d35857050d_docx_parser_py.html
+|       z_72f197d35857050d_pdf_parser_py.html
+|       z_72f197d35857050d_pptx_parser_py.html
+|       z_72f197d35857050d_xlsx_parser_py.html
+|       z_72f197d35857050d___init___py.html
+|       z_a44f0ac069e85531_conftest_py.html
+|       z_a44f0ac069e85531_test_auth_api_py.html
+|       z_a44f0ac069e85531_test_chunker_py.html
+|       z_a44f0ac069e85531_test_citation_py.html
+|       z_a44f0ac069e85531_test_cleaner_py.html
+|       z_a44f0ac069e85531_test_complete_extraction_py.html
+|       z_a44f0ac069e85531_test_docx_py.html
+|       z_a44f0ac069e85531_test_embedding_py.html
+|       z_a44f0ac069e85531_test_extraction_api_py.html
+|       z_a44f0ac069e85531_test_extraction_entities_py.html
+|       z_a44f0ac069e85531_test_extraction_service_py.html
+|       z_a44f0ac069e85531_test_invoice_extraction_py.html
+|       z_a44f0ac069e85531_test_llm_service_py.html
+|       z_a44f0ac069e85531_test_negative_cases_py.html
+|       z_a44f0ac069e85531_test_ocr_py.html
+|       z_a44f0ac069e85531_test_password_security_py.html
+|       z_a44f0ac069e85531_test_pdf_ocr_py.html
+|       z_a44f0ac069e85531_test_pdf_py.html
+|       z_a44f0ac069e85531_test_pptx_py.html
+|       z_a44f0ac069e85531_test_prompt_builder_py.html
+|       z_a44f0ac069e85531_test_protected_auth_py.html
+|       z_a44f0ac069e85531_test_rag_service_py.html
+|       z_a44f0ac069e85531_test_retriever_py.html
+|       z_a44f0ac069e85531_test_search_api_py.html
+|       z_a44f0ac069e85531_test_search_service_py.html
+|       z_a44f0ac069e85531_test_search_validation_py.html
+|       z_a44f0ac069e85531_test_similarity_search_py.html
+|       z_a44f0ac069e85531_test_vector_store_py.html
+|       z_a44f0ac069e85531_test_xlsx_py.html
+|       z_a44f0ac069e85531___init___py.html
+|       z_a7b07432402c05f1_logger_py.html
+|       z_adebc8a9b0574ea2_config_py.html
+|       z_adebc8a9b0574ea2_exceptions_py.html
+|       z_adebc8a9b0574ea2___init___py.html
+|       z_b4c115836e286174_auth_py.html
+|       z_b4c115836e286174_extraction_py.html
+|       z_b4c115836e286174_search_py.html
+|       z_b4c115836e286174___init___py.html
+|       z_de3c7ac9f91c9430_request_logger_py.html
+|       __init___py.html
+|       
++---powerbi_data
+|       document_analytics.csv
+|       extraction_analytics.csv
+|       search_analytics.csv
+|       users.csv
+|       
++---scripts
+|       repair_faiss.py
+|       
++---tests
+|   |   check_users.py
+|   |   conftest.py
+|   |   sample.docx
+|   |   sample.pdf
+|   |   sample.png
+|   |   sample.pptx
+|   |   sample.xlsx
+|   |   sample_chunk_testing.pdf
+|   |   scanned.pdf
+|   |   test_auth_api.py
+|   |   test_chunker.py
+|   |   test_citation.py
+|   |   test_cleaner.py
+|   |   test_complete_extraction.py
+|   |   test_docx.py
+|   |   test_embedding.py
+|   |   test_extraction_api.py
+|   |   test_extraction_entities.py
+|   |   test_extraction_service.py
+|   |   test_invoice_extraction.py
+|   |   test_llm_service.py
+|   |   test_negative_cases.py
+|   |   test_ocr.py
+|   |   test_password_security.py
+|   |   test_pdf.py
+|   |   test_pdf_ocr.py
+|   |   test_performance.py
+|   |   test_pptx.py
+|   |   test_prompt_builder.py
+|   |   test_protected_auth.py
+|   |   test_rag_service.py
+|   |   test_retriever.py
+|   |   test_search_api.py
+|   |   test_search_service.py
+|   |   test_search_validation.py
+|   |   test_similarity_search.py
+|   |   test_vector_store.py
+|   |   test_xlsx.py
+|   |   __init__.py
+|   |   
+|   \---__pycache__
+|           check_users.cpython-314.pyc
+|           conftest.cpython-314-pytest-9.1.1.pyc
+|           test_auth_api.cpython-314-pytest-9.1.1.pyc
+|           test_auth_api.cpython-314.pyc
+|           test_chunker.cpython-314-pytest-9.1.1.pyc
+|           test_chunker.cpython-314.pyc
+|           test_citation.cpython-314-pytest-9.1.1.pyc
+|           test_citation.cpython-314.pyc
+|           test_cleaner.cpython-314-pytest-9.1.1.pyc
+|           test_cleaner.cpython-314.pyc
+|           test_complete_extraction.cpython-314-pytest-9.1.1.pyc
+|           test_complete_extraction.cpython-314.pyc
+|           test_document_processor.cpython-314.pyc
+|           test_docx.cpython-314-pytest-9.1.1.pyc
+|           test_docx.cpython-314.pyc
+|           test_embedding.cpython-314-pytest-9.1.1.pyc
+|           test_embedding.cpython-314.pyc
+|           test_extraction_api.cpython-314-pytest-9.1.1.pyc
+|           test_extraction_api.cpython-314.pyc
+|           test_extraction_entities.cpython-314-pytest-9.1.1.pyc
+|           test_extraction_entities.cpython-314.pyc
+|           test_extraction_service.cpython-314-pytest-9.1.1.pyc
+|           test_extraction_service.cpython-314.pyc
+|           test_health.cpython-314-pytest-9.1.1.pyc
+|           test_invoice_extraction.cpython-314-pytest-9.1.1.pyc
+|           test_invoice_extraction.cpython-314.pyc
+|           test_llm_service.cpython-314-pytest-9.1.1.pyc
+|           test_llm_service.cpython-314.pyc
+|           test_negative_cases.cpython-314-pytest-9.1.1.pyc
+|           test_ocr.cpython-314-pytest-9.1.1.pyc
+|           test_ocr.cpython-314.pyc
+|           test_password_security.cpython-314-pytest-9.1.1.pyc
+|           test_password_security.cpython-314.pyc
+|           test_pdf.cpython-314-pytest-9.1.1.pyc
+|           test_pdf.cpython-314.pyc
+|           test_pdf_ocr.cpython-314-pytest-9.1.1.pyc
+|           test_pdf_ocr.cpython-314.pyc
+|           test_performance.cpython-314-pytest-9.1.1.pyc
+|           test_pptx.cpython-314-pytest-9.1.1.pyc
+|           test_pptx.cpython-314.pyc
+|           test_prompt_builder.cpython-314-pytest-9.1.1.pyc
+|           test_prompt_builder.cpython-314.pyc
+|           test_protected_auth.cpython-314-pytest-9.1.1.pyc
+|           test_protected_auth.cpython-314.pyc
+|           test_rag_service.cpython-314-pytest-9.1.1.pyc
+|           test_rag_service.cpython-314.pyc
+|           test_retriever.cpython-314-pytest-9.1.1.pyc
+|           test_retriever.cpython-314.pyc
+|           test_search_api.cpython-314-pytest-9.1.1.pyc
+|           test_search_api.cpython-314.pyc
+|           test_search_service.cpython-314-pytest-9.1.1.pyc
+|           test_search_service.cpython-314.pyc
+|           test_search_validation.cpython-314-pytest-9.1.1.pyc
+|           test_search_validation.cpython-314.pyc
+|           test_similarity_search.cpython-314-pytest-9.1.1.pyc
+|           test_similarity_search.cpython-314.pyc
+|           test_vector_store.cpython-314-pytest-9.1.1.pyc
+|           test_vector_store.cpython-314.pyc
+|           test_xlsx.cpython-314-pytest-9.1.1.pyc
+|           test_xlsx.cpython-314.pyc
+|           __init__.cpython-314.pyc
+|           
++---uploads
+|   |   BackendAPI.JPG
+|   |   harshad_mehta_investing_playbook.pdf
+|   |   logic-gates.jpg
+|   |   sample.pdf
+|   |   sample1.pdf
+|   |   scanned.pdf
+|   |   WhatsApp Image 2026-06-05 at 19.13.58.jpeg
+|   |   
+|   +---docx
+|   |       AI_ML_for_Gaming.docx
+|   |       AI_ML_for_Gaming_Syllabus_23BTCSL402.docx
+|   |       enterprise_ai.docx
+|   |       Enterprise_AI_Knowledge_Assistant_16_Week_Project_Plan.docx
+|   |       Golden_Trader_Routine_Lifetime_Guide.docx
+|   |       sample.docx
+|   |       
+|   +---pdf
+|   |       harshad_mehta_investing_playbook.pdf
+|   |       ocr_document.pdf
+|   |       ocr_guide.pdf
+|   |       sample.pdf
+|   |       sample_chunk_testing.pdf
+|   |       Tableau_Syllabus.pdf
+|   |       
+|   +---pptx
+|   |       sample.pptx
+|   |       Tableau.pptx
+|   |       
+|   \---xlsx
+|           sample.xlsx
+|           
++---vector_db
+|       faiss.index
+|       faiss.index.backup_before_repair
+|       metadata.json
+|       
+\---__pycache__
+        __init__.cpython-314.pyc
+        
