@@ -6,19 +6,25 @@ Protected Authentication Test
 ===============================================================
 """
 
-import uuid
+from uuid import uuid4
 
-from fastapi.testclient import (
-    TestClient
-)
+from fastapi.testclient import TestClient
 
 from app.main import app
 
+
+# ==========================================================
+# Test Client
+# ==========================================================
 
 client = TestClient(
     app
 )
 
+
+# ==========================================================
+# Protected Route Test
+# ==========================================================
 
 def test_protected_route():
 
@@ -34,11 +40,17 @@ def test_protected_route():
 
 
     # ==========================================================
-    # Create a unique test user
+    # Generate Unique Test User
     # ==========================================================
 
+    unique_id = uuid4().hex[:8]
+
     username = (
-        f"protected_test_{uuid.uuid4().hex[:8]}"
+        f"protected_test_{unique_id}"
+    )
+
+    email = (
+        f"protected_test_{unique_id}@example.com"
     )
 
     password = (
@@ -59,6 +71,9 @@ def test_protected_route():
             "username":
                 username,
 
+            "email":
+                email,
+
             "password":
                 password
 
@@ -78,9 +93,20 @@ def test_protected_route():
     )
 
 
+    print()
+
+    print(
+        "Registration Response:"
+    )
+
+    print(
+        register_response.json()
+    )
+
+
     assert (
         register_response.status_code
-        in (200, 201)
+        == 201
     )
 
 
@@ -113,6 +139,17 @@ def test_protected_route():
 
     print(
         login_response.status_code
+    )
+
+
+    print()
+
+    print(
+        "Login Response:"
+    )
+
+    print(
+        login_response.json()
     )
 
 
@@ -240,6 +277,10 @@ def test_protected_route():
 
     print("=" * 70)
 
+
+# ==========================================================
+# Run Test Directly
+# ==========================================================
 
 if __name__ == "__main__":
 
