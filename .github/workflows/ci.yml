@@ -20,19 +20,91 @@ jobs:
 
     steps:
 
+      # --------------------------------------------------
+      # 1. Checkout repository
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --------------------------------------------------
+      # 2. Set up the same Python version used locally
+      # --------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.14.6"
 
+      # --------------------------------------------------
+      # 3. Upgrade pip
+      # --------------------------------------------------
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      # --------------------------------------------------
+      # 4. Install Tesseract OCR
+      # --------------------------------------------------
+      - name: Install Tesseract OCR
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
 
+      # --------------------------------------------------
+      # 5. Install Ollama
+      # --------------------------------------------------
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+
+      # --------------------------------------------------
+      # 6. Start Ollama server
+      # --------------------------------------------------
+      - name: Start Ollama
+        run: |
+          nohup ollama serve > /tmp/ollama.log 2>&1 &
+
+          echo "Waiting for Ollama to start..."
+
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:11434/api/tags > /dev/null; then
+              echo "Ollama is running."
+              break
+            fi
+
+            echo "Waiting for Ollama..."
+            sleep 2
+          done
+
+          if ! curl -s http://127.0.0.1:11434/api/tags > /dev/null; then
+            echo "Ollama failed to start."
+            cat /tmp/ollama.log
+            exit 1
+          fi
+
+      # --------------------------------------------------
+      # 7. Download the exact model used by the application
+      # --------------------------------------------------
+      - name: Pull Ollama model
+        run: |
+          ollama pull llama3.2
+
+      # --------------------------------------------------
+      # 8. Verify Ollama model
+      # --------------------------------------------------
+      - name: Verify Ollama
+        run: |
+          echo "Available Ollama models:"
+          ollama list
+
+      # --------------------------------------------------
+      # 9. Install Python dependencies
+      # --------------------------------------------------
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # --------------------------------------------------
+      # 10. Run complete test suite
+      # --------------------------------------------------
       - name: Run tests
-        run: pytest -v
+        run: |
+          pytest -v
