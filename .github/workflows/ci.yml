@@ -9,10 +9,22 @@ on:
     branches:
       - main
 
+# --------------------------------------------------
+# GitHub Container Registry configuration
+# --------------------------------------------------
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   test:
 
     runs-on: ubuntu-latest
+
+    # Required for publishing the Docker image to GHCR
+    permissions:
+      contents: read
+      packages: write
 
     defaults:
       run:
@@ -88,7 +100,7 @@ jobs:
           ollama pull llama3.2
 
       # --------------------------------------------------
-      # 8. Verify Ollama model
+      # 8. Verify Ollama
       # --------------------------------------------------
       - name: Verify Ollama
         run: |
@@ -108,3 +120,40 @@ jobs:
       - name: Run tests
         run: |
           pytest -v
+
+      # ==================================================
+      # DOCKER / GHCR PUBLISHING
+      # ==================================================
+
+      # --------------------------------------------------
+      # 11. Log in to GitHub Container Registry
+      # --------------------------------------------------
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --------------------------------------------------
+      # 12. Generate Docker image metadata
+      # --------------------------------------------------
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      # --------------------------------------------------
+      # 13. Build and push Docker image
+      # --------------------------------------------------
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
