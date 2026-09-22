@@ -14,7 +14,7 @@ on:
 # --------------------------------------------------
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: pragati0908/enterprise-ai-knowledge-assistant
 
 jobs:
   test:
