@@ -1,0 +1,28 @@
+services:
+  enterprise-ai-backend:
+    image: enterprise-ai-backend:local
+    container_name: enterprise-ai-backend-local
+
+    ports:
+      - "8000:8000"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - ./backend/enterprise_ai.db:/app/enterprise_ai.db
+      - ./backend/uploads:/backend/uploads
+      - ./backend/vector_db:/backend/vector_db
+
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      DEBUG: "True"
+      API_PREFIX: /api
+      SECRET_KEY: ${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      MAX_UPLOAD_SIZE: 10485760
+      ALLOWED_EXTENSIONS: pdf,docx,pptx,xlsx
+      LOG_LEVEL: INFO
+
+    restart: unless-stopped
